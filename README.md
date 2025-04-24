@@ -16,6 +16,7 @@ A machine learning-based alert validation system that classifies IDS alerts (e.g
 ## 🗂️ Folder Structure
 
 ml-ids-analyzer/
+
 ├── data/                   # Raw and processed datasets
 │   └── cicids2017/         # Dataset folder
 ├── notebooks/              # Jupyter notebooks for EDA, modeling
