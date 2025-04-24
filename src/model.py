@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+from src.evaluate import evaluate_model
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
@@ -37,10 +38,8 @@ def train_model():
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
-    # Evaluate
-    print("Classification Report:")
-    print(classification_report(y_test, y_pred))
-    print("ROC AUC:", roc_auc_score(y_test, y_pred))
+    # Evaluate using external module
+    evaluate_model(y_test, y_pred, model_name="Random Forest")
 
     # Save predictions
     os.makedirs("outputs", exist_ok=True)
