@@ -50,5 +50,12 @@ def train_model():
     results.to_csv(OUTPUT_FILE, index=False)
     print(f"Predictions saved to {OUTPUT_FILE}")
 
+# Save trained model and scaler
+import joblib
+joblib.dump(model, "outputs/random_forest_model.joblib")
+joblib.dump(scaler, "outputs/scaler.joblib")
+print("Model and scaler saved to outputs/")
+
+
 if __name__ == "__main__":
     train_model()
