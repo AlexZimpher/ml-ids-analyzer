@@ -14,24 +14,8 @@ A machine learning-based alert validation system that classifies IDS alerts (e.g
 ---
 
 ## 🗂️ Folder Structure
+![image](https://github.com/user-attachments/assets/e9960899-8304-4053-b067-3fdf32a27516)
 
-ml-ids-analyzer/
-
-├── data/                   # Raw and processed datasets
-│   └── cicids2017/         # Dataset folder
-├── notebooks/              # Jupyter notebooks for EDA, modeling
-│   └── 01_eda.ipynb
-│   └── 02_model_training.ipynb
-├── src/                    # Core source code (modular Python scripts)
-│   ├── __init__.py
-│   ├── preprocess.py       # Data parsing and feature engineering
-│   ├── model.py            # Model training and inference
-│   └── evaluate.py         # Evaluation metrics and reports
-├── outputs/                # Model outputs, prediction results
-├── config/                 # Config files for paths, parameters
-├── requirements.txt        # Python package requirements
-├── .gitignore
-└── README.md               # Project overview and usage
 
 ## ✅ Comprehensive To-Do List
 
