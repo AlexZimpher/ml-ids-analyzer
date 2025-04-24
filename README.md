@@ -25,3 +25,7 @@ A machine learning-based system to predict the validity of intrusion detection s
 git clone https://github.com/your-username/ml-ids-analyzer.git
 cd ml-ids-analyzer
 pip install -r requirements.txt
+
+## 👥 Authors
+- Alexander Zimpher @AlexZimpher
+- Spencer Hendren @SnakAttack
