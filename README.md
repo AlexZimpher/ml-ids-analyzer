@@ -98,9 +98,11 @@ A machine learning-based alert validation system that classifies IDS alerts (e.g
 
 ---
 
-git clone https://github.com/your-username/ml-ids-analyzer.git
-cd ml-ids-analyzer
+git clone https://github.com/AlexZimpher/ml-ids-analyzer.git
+
 pip install -r requirements.txt
+
+---
 
 ## 👥 Authors
 - Alexander Zimpher @AlexZimpher
