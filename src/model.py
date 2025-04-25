@@ -1,7 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -25,40 +24,45 @@ FEATURES = [
     'Flow Bytes/s', 'Flow Packets/s'
 ]
 
-
 def train_model():
-    # Load & clean
+    # 1) Load
     df = pd.read_csv(DATA_FILE, skipinitialspace=True)
     df.columns = df.columns.str.strip()
+
+    # 2) Clean any non-finite values
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+    df.dropna(subset=FEATURES + ['Label'], inplace=True)  # drop rows missing any feature or label
+
+    # 3) Split features & target
     X = df[FEATURES]
     y = df['Label']
 
-    # Split
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, stratify=y, random_state=42
     )
 
-    # Scale
+    # 4) Scale
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
+    X_test  = scaler.transform(X_test)
 
-    # Train
+    # 5) Train
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
-    # Evaluate
+    # 6) Evaluate
     evaluate_model(y_test, y_pred, model_name='Random Forest')
 
-    # Save outputs
+    # 7) Save outputs
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    pd.DataFrame({'Actual': y_test, 'Predicted': y_pred}).to_csv(PRED_CSV, index=False)
+    pd.DataFrame({'Actual': y_test, 'Predicted': y_pred}) \
+      .to_csv(PRED_CSV, index=False)
     joblib.dump(model, MODEL_FILE)
     joblib.dump(scaler, SCALER_FILE)
-    print(f"Saved predictions to {PRED_CSV}")
-    print(f"Saved model to {MODEL_FILE} and scaler to {SCALER_FILE}")
-
+    print(f"Saved predictions → {PRED_CSV}")
+    print(f"Saved model → {MODEL_FILE}")
+    print(f"Saved scaler → {SCALER_FILE}")
 
 if __name__ == '__main__':
     train_model()
