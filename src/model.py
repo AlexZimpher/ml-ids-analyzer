@@ -1,3 +1,8 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from src.evaluate import evaluate_model
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -6,7 +11,6 @@ from sklearn.metrics import classification_report, confusion_matrix, roc_auc_sco
 from src.evaluate import evaluate_model
 import matplotlib.pyplot as plt
 import seaborn as sns
-import os
 import joblib
 
 # === Configuration ===
