@@ -7,6 +7,7 @@ from src.evaluate import evaluate_model
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+import joblib
 
 # === Configuration ===
 DATA_FILE = "data/cicids2017_clean.csv"
@@ -41,20 +42,21 @@ def train_model():
     # Evaluate using external module
     evaluate_model(y_test, y_pred, model_name="Random Forest")
 
-    # Save predictions
-    os.makedirs("outputs", exist_ok=True)
-    results = pd.DataFrame({
-        "Actual": y_test,
-        "Predicted": y_pred
-    })
-    results.to_csv(OUTPUT_FILE, index=False)
-    print(f"Predictions saved to {OUTPUT_FILE}")
+   # Save predictions
+os.makedirs("outputs", exist_ok=True)
+results = pd.DataFrame({
+    "Actual": y_test,
+    "Predicted": y_pred
+})
+results.to_csv(OUTPUT_FILE, index=False)
+print(f"Predictions saved to {OUTPUT_FILE}")
 
 # Save trained model and scaler
 import joblib
 joblib.dump(model, "outputs/random_forest_model.joblib")
 joblib.dump(scaler, "outputs/scaler.joblib")
 print("Model and scaler saved to outputs/")
+
 
 
 if __name__ == "__main__":
