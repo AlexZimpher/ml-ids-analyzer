@@ -11,5 +11,5 @@ seaborn
 
 # Optional (comment out if unused)
 # mlflow           # For experiment tracking
-# joblib           # For model serialization
+joblib             # For model serialization
 # tqdm             # Progress bars
