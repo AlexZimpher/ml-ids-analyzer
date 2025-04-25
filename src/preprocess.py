@@ -4,7 +4,7 @@ import pandas as pd
 # === Config ===
 DATA_DIR = "data/cicids2017"
 OUTPUT_FILE = "data/cicids2017_clean.csv"
-LABEL_COL = "Label"
+LABEL_COL = " Label"
 POSITIVE_CLASSES = [  # These are all attacks
     'DoS Hulk', 'PortScan', 'DDoS', 'DoS GoldenEye',
     'FTP-Patator', 'SSH-Patator', 'DoS slowloris', 'DoS Slowhttptest',
