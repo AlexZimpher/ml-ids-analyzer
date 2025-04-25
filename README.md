@@ -16,43 +16,51 @@ A machine learning-based alert validation system that classifies IDS alerts (e.g
 ## 🗂️ Folder Structure
 ![image](https://github.com/user-attachments/assets/e9960899-8304-4053-b067-3fdf32a27516)
 
+## :rocket: Current To-Do List (Post-Baseline & Graph Up)
 
-## ✅ Comprehensive To-Do List
+### 1. Model Improvement
+- [ ] **Hyperparameter Search**  
+  - Run `GridSearchCV` or `RandomizedSearchCV` over key RF params (`n_estimators`, `max_depth`, `min_samples_leaf`) with `n_jobs=-1` and `verbose=1`
+- [ ] **Threshold Tuning**  
+  - Plot Precision–Recall curve  
+  - Select an optimal probability cutoff to balance false positives vs. false negatives
+- [ ] **Class-Weight Experiments**  
+  - Test `class_weight` adjustments (e.g. `{0:1, 1:2}`) or SMOTE/undersampling
 
-### 🔹 Phase 1: Setup & Data
-- [x] Create GitHub repo and structure
-- [x] Initialize Git LFS and attempt push
-- [x] Move CICIDS2017 CSVs into `data/cicids2017/`
+### 2. Feature Engineering & Selection
+- [ ] **Derive New Features**  
+  - Burst rate (alerts per second)  
+  - Session duration (first→last packet timestamp)  
+  - Entropy of destination ports and packet sizes  
+  - Protocol-specific flag counts (e.g. TCP SYN)
+- [ ] **Automated Selection**  
+  - Generate correlation heatmap to drop collinear features  
+  - Apply Recursive Feature Elimination (RFE) to isolate top predictors
 
-### 🔹 Phase 2: Preprocessing
-- [ ] Write `preprocess.py` to:
-  - Merge CSVs
-  - Clean columns
-  - Handle missing values
-  - Label encode target
-  - Save merged dataset
-- [ ] Engineer useful features from:
-  - IPs, ports, protocols
-  - Byte/packet statistics
-  - Frequency/entropy heuristics
+### 3. End-to-End Demo
+- [ ] **Demo Notebook** (`notebooks/03_demo.ipynb`)  
+  - Load saved model+scaler and run inference on sample alerts  
+  - Include inline confusion matrix, ROC curve, and PR curve
+- [ ] **Slide Deck**  
+  - 10–12 slides covering Purpose → Data → Methods → Results → Next Steps  
+  - Embed feature-importance and threshold trade-off visuals
 
-### 🔹 Phase 3: EDA & Baseline Modeling
-- [ ] Load dataset in notebook
-- [ ] Plot class imbalance and distributions
-- [ ] Train baseline models (logistic regression, decision tree)
-- [ ] Evaluate with ROC-AUC, F1, confusion matrix
-- [ ] Write `model.py` to automate training
+### 4. Documentation & Release
+- [ ] **README.md**  
+  - Quickstart: clone → install → `python preprocess.py` → `python -m src.model` → `python -m src.predict`  
+  - Instructions for Git LFS or release asset for `cicids2017_clean.csv`
+- [ ] **GitHub Release v1.0**  
+  - Tag stable commit and attach cleaned CSV if not in LFS
 
-### 🔹 Phase 4: Evaluation
-- [ ] Write `evaluate.py` for consistent metrics
-- [ ] Add model explainability (feature importance)
-- [ ] Store output: CSV with predictions + confidence
-
-### 🔹 Phase 5: Presentation & Documentation
-- [ ] Create demo notebook (end-to-end pipeline)
-- [ ] Prepare internal slide deck
-- [ ] Clean `README.md` for public view
-- [ ] (Optional) Record project walkthrough video
+### 5. Optional “Stand-Out” Extensions
+- [ ] **Real-Time Integration**  
+  - Stream Suricata EVE JSON into `predict.py` for live inference  
+- [ ] **Explainability**  
+  - Integrate SHAP or LIME to visualize per-alert feature contributions  
+- [ ] **Deployment**  
+  - Dockerize the pipeline with `docker-compose.yml` or Helm chart  
+- [ ] **User Interface**  
+  - Build a simple Streamlit/Flask dashboard for alert browsing, threshold adjustment, and export  
 
 ---
 
