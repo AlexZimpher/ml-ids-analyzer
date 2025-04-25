@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import pandas as pd
@@ -9,9 +9,15 @@ from sklearn.ensemble import RandomForestClassifier
 import joblib
 from src.evaluate import evaluate_model
 
-# === Configuration ===
-DATA_FILE = "data/cicids2017_clean.csv"
-OUTPUT_FILE = "outputs/predictions.csv"
+# === Paths ===
+BASE_DIR    = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+DATA_FILE   = os.path.join(BASE_DIR, 'data', 'cicids2017_clean.csv')
+OUTPUT_DIR  = os.path.join(BASE_DIR, 'outputs')
+PRED_CSV    = os.path.join(OUTPUT_DIR, 'predictions.csv')
+MODEL_FILE  = os.path.join(OUTPUT_DIR, 'random_forest_model.joblib')
+SCALER_FILE = os.path.join(OUTPUT_DIR, 'scaler.joblib')
+
+# === Features ===
 FEATURES = [
     'Flow Duration', 'Total Fwd Packets', 'Total Backward Packets',
     'Fwd Packet Length Mean', 'Bwd Packet Length Mean',
@@ -19,12 +25,15 @@ FEATURES = [
     'Flow Bytes/s', 'Flow Packets/s'
 ]
 
+
 def train_model():
-    # Load and split data
-    df = pd.read_csv(DATA_FILE)
+    # Load & clean
+    df = pd.read_csv(DATA_FILE, skipinitialspace=True)
+    df.columns = df.columns.str.strip()
     X = df[FEATURES]
     y = df['Label']
 
+    # Split
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, stratify=y, random_state=42
     )
@@ -34,27 +43,22 @@ def train_model():
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
 
-    # Train model
+    # Train
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
     # Evaluate
-    evaluate_model(y_test, y_pred, model_name="Random Forest")
+    evaluate_model(y_test, y_pred, model_name='Random Forest')
 
-    # Save predictions
-    os.makedirs("outputs", exist_ok=True)
-    results = pd.DataFrame({
-        "Actual": y_test,
-        "Predicted": y_pred
-    })
-    results.to_csv(OUTPUT_FILE, index=False)
-    print(f"Predictions saved to {OUTPUT_FILE}")
+    # Save outputs
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    pd.DataFrame({'Actual': y_test, 'Predicted': y_pred}).to_csv(PRED_CSV, index=False)
+    joblib.dump(model, MODEL_FILE)
+    joblib.dump(scaler, SCALER_FILE)
+    print(f"Saved predictions to {PRED_CSV}")
+    print(f"Saved model to {MODEL_FILE} and scaler to {SCALER_FILE}")
 
-    # Save model + scaler
-    joblib.dump(model, "outputs/random_forest_model.joblib")
-    joblib.dump(scaler, "outputs/scaler.joblib")
-    print("Model and scaler saved to outputs/")
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     train_model()
