@@ -3,10 +3,14 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='ml_ids_analyzer',
+    # THIS MUST MATCH what your entry-points use below
+    name='ml-ids-analyzer',
     version='1.0.0',
+
+    # Tell setuptools where your modules live
     package_dir={'': 'src'},
     packages=find_packages(where='src'),
+
     install_requires=[
         'numpy',
         'pandas',
@@ -18,6 +22,7 @@ setup(
         'PyYAML',
         'shap'
     ],
+
     entry_points={
         'console_scripts': [
             'mlids-preprocess=src.preprocess:main',
