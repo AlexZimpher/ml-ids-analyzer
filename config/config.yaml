@@ -1,0 +1,32 @@
+data:
+  raw_dir: "data/cicids2017"
+  clean_file: "data/cicids2017_clean.csv"
+
+paths:
+  output_dir: "outputs"
+  predictions: "outputs/predictions.csv"
+  new_predictions: "outputs/new_predictions.csv"
+  model_file: "outputs/random_forest_model.joblib"
+  scaler_file: "outputs/scaler.joblib"
+
+features:
+  - "Flow Duration"
+  - "Total Fwd Packets"
+  - "Total Backward Packets"
+  - "Fwd Packet Length Mean"
+  - "Bwd Packet Length Mean"
+  - "Fwd IAT Mean"
+  - "Bwd IAT Mean"
+  - "Flow IAT Mean"
+  - "Flow Bytes/s"
+  - "Flow Packets/s"
+
+label_column: "Label"
+
+cleaning:
+  missing_threshold: 0.9
+
+model:
+  random_forest:
+    n_estimators: 100
+    random_state: 42
