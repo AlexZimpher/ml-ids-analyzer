@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(mes
 
 MODEL_PATH = cfg['paths']['model_file']
 SCALER_PATH = cfg['paths']['scaler_file']
-INPUT_FILE = cfg['data'].get('new_input_file', 'data/new_data.csv')
+INPUT_FILE = cfg['data'].get('new_input_file', 'data/cicids2017_clean.csv')
 OUTPUT_FILE = cfg['paths']['new_predictions']
 FEATURES = cfg['features']
 LABEL_COL = cfg['label_column']
