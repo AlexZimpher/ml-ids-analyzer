@@ -5,8 +5,8 @@ from setuptools import setup, find_packages
 setup(
     name='ml_ids_analyzer',
     version='1.0.0',
-    packages=find_packages('src'),
     package_dir={'': 'src'},
+    packages=find_packages(where='src'),
     install_requires=[
         'numpy',
         'pandas',
