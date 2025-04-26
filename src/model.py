@@ -1,68 +1,59 @@
+#!/usr/bin/env python3
 import os
-import sys
-import numpy as np
 import pandas as pd
+import numpy as np
+import joblib
+import logging
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
-import joblib
-from src.evaluate import evaluate_model
+from src.evaluate import evaluate_model, explain_model
+from src.config import cfg
 
-# === Paths ===
-BASE_DIR    = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-DATA_FILE   = os.path.join(BASE_DIR, 'data', 'cicids2017_clean.csv')
-OUTPUT_DIR  = os.path.join(BASE_DIR, 'outputs')
-PRED_CSV    = os.path.join(OUTPUT_DIR, 'predictions.csv')
-MODEL_FILE  = os.path.join(OUTPUT_DIR, 'random_forest_model.joblib')
-SCALER_FILE = os.path.join(OUTPUT_DIR, 'scaler.joblib')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
 
-# === Features ===
-FEATURES = [
-    'Flow Duration', 'Total Fwd Packets', 'Total Backward Packets',
-    'Fwd Packet Length Mean', 'Bwd Packet Length Mean',
-    'Fwd IAT Mean', 'Bwd IAT Mean', 'Flow IAT Mean',
-    'Flow Bytes/s', 'Flow Packets/s'
-]
+DATA_FILE = cfg['data']['clean_file']
+OUTPUT_DIR = cfg['paths']['output_dir']
+PRED_CSV = cfg['paths']['predictions']
+MODEL_FILE = cfg['paths']['model_file']
+SCALER_FILE = cfg['paths']['scaler_file']
+FEATURES = cfg['features']
+RF_PARAMS = cfg['model']['random_forest']
+
 
 def train_model():
-    # 1) Load
     df = pd.read_csv(DATA_FILE, skipinitialspace=True)
     df.columns = df.columns.str.strip()
+    df.replace([np.inf, -np.inf], pd.NA, inplace=True)
+    df.dropna(subset=FEATURES + [cfg['label_column']], inplace=True)
 
-    # 2) Clean any non-finite values
-    df.replace([np.inf, -np.inf], np.nan, inplace=True)
-    df.dropna(subset=FEATURES + ['Label'], inplace=True)  # drop rows missing any feature or label
-
-    # 3) Split features & target
     X = df[FEATURES]
-    y = df['Label']
+    y = df[cfg['label_column']]
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.3, stratify=y, random_state=42
+        X, y, test_size=0.3, stratify=y, random_state=RF_PARAMS['random_state']
     )
 
-    # 4) Scale
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
-    X_test  = scaler.transform(X_test)
+    X_test = scaler.transform(X_test)
 
-    # 5) Train
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model = RandomForestClassifier(**RF_PARAMS)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
-    # 6) Evaluate
     evaluate_model(y_test, y_pred, model_name='Random Forest')
+    explain_model(model, X_train)
 
-    # 7) Save outputs
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    pd.DataFrame({'Actual': y_test, 'Predicted': y_pred}) \
-      .to_csv(PRED_CSV, index=False)
+    pd.DataFrame({'Actual': y_test, 'Predicted': y_pred}).to_csv(PRED_CSV, index=False)
     joblib.dump(model, MODEL_FILE)
     joblib.dump(scaler, SCALER_FILE)
-    print(f"Saved predictions → {PRED_CSV}")
-    print(f"Saved model → {MODEL_FILE}")
-    print(f"Saved scaler → {SCALER_FILE}")
+
+    logging.info(f"Saved predictions → {PRED_CSV}")
+    logging.info(f"Saved model → {MODEL_FILE}")
+    logging.info(f"Saved scaler → {SCALER_FILE}")
+
 
 if __name__ == '__main__':
     train_model()
