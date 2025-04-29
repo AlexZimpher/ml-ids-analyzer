@@ -1,5 +1,5 @@
 import pytest
-from src.model import train_model
+from model import train_model
 
 def test_train_model_runs():
     # Smoke test: training should run without exceptions on minimal config
