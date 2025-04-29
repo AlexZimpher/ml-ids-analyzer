@@ -18,7 +18,7 @@ Key highlights:
 ## 📁 Repository Structure
 ```
 ml-ids-analyzer/
-├── ml_ids_analyzer/          # Core library package
+├── ml_ids_analyzer/         # Core library package
 │   ├── config.py            # YAML configuration loader
 │   ├── preprocessing/       # Data cleaning & feature engineering
 │   ├── modeling/            # Training, tuning & evaluation
