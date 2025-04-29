@@ -1,111 +1,115 @@
-# ML-IDS-Analyzer (Private Planning)
+# ML-IDS-Analyzer
 
-A machine learning-based alert validation system that classifies IDS alerts (e.g., from Suricata) as likely valid (true positive) or invalid (false positive). Designed and developed by final-year cybersecurity students, this project showcases applied ML in network defense by reducing alert noise and surfacing actionable threats.
-
----
-
-## 🧠 Project Purpose
-
-- Predict the likelihood that an IDS alert is valid using supervised ML.
-- Minimize false positives in student SOC environments and small-scale deployments.
-- Demonstrate practical application of cybersecurity data analysis and ML/AI modeling.
-- Build a professional-grade portfolio project with real-world impact.
+**Authors:** Alexander Zimpher (@AlexZimpher) & Spencer Hendren (@SnakAttack)
 
 ---
 
-## 🗂️ Folder Structure
-![image](https://github.com/user-attachments/assets/e9960899-8304-4053-b067-3fdf32a27516)
+## 🚀 Overview
+ML-IDS-Analyzer is a portfolio project by two final‑year cybersecurity students, designed to demonstrate applied machine learning techniques in network defense. The system classifies IDS alerts (e.g., from Suricata) into **valid (true positive)** or **invalid (false positive)**, reducing noise and helping small‑scale SOC environments focus on actionable threats.
 
-## :rocket: Current To-Do List (Post-Baseline & Graph Up)
-
-### 1. Model Improvement
-- [ ] **Hyperparameter Search**  
-  - Run `GridSearchCV` or `RandomizedSearchCV` over key RF params (`n_estimators`, `max_depth`, `min_samples_leaf`) with `n_jobs=-1` and `verbose=1`
-- [ ] **Threshold Tuning**  
-  - Plot Precision–Recall curve  
-  - Select an optimal probability cutoff to balance false positives vs. false negatives
-- [ ] **Class-Weight Experiments**  
-  - Test `class_weight` adjustments (e.g. `{0:1, 1:2}`) or SMOTE/undersampling
-
-### 2. Feature Engineering & Selection
-- [ ] **Derive New Features**  
-  - Burst rate (alerts per second)  
-  - Session duration (first→last packet timestamp)  
-  - Entropy of destination ports and packet sizes  
-  - Protocol-specific flag counts (e.g. TCP SYN)
-- [ ] **Automated Selection**  
-  - Generate correlation heatmap to drop collinear features  
-  - Apply Recursive Feature Elimination (RFE) to isolate top predictors
-
-### 3. End-to-End Demo
-- [ ] **Demo Notebook** (`notebooks/03_demo.ipynb`)  
-  - Load saved model+scaler and run inference on sample alerts  
-  - Include inline confusion matrix, ROC curve, and PR curve
-- [ ] **Slide Deck**  
-  - 10–12 slides covering Purpose → Data → Methods → Results → Next Steps  
-  - Embed feature-importance and threshold trade-off visuals
-
-### 4. Documentation & Release
-- [ ] **README.md**  
-  - Quickstart: clone → install → `python preprocess.py` → `python -m src.model` → `python -m src.predict`  
-  - Instructions for Git LFS or release asset for `cicids2017_clean.csv`
-- [ ] **GitHub Release v1.0**  
-  - Tag stable commit and attach cleaned CSV if not in LFS
-
-### 5. Optional “Stand-Out” Extensions
-- [ ] **Real-Time Integration**  
-  - Stream Suricata EVE JSON into `predict.py` for live inference  
-- [ ] **Explainability**  
-  - Integrate SHAP or LIME to visualize per-alert feature contributions  
-- [ ] **Deployment**  
-  - Dockerize the pipeline with `docker-compose.yml` or Helm chart  
-- [ ] **User Interface**  
-  - Build a simple Streamlit/Flask dashboard for alert browsing, threshold adjustment, and export  
+Key highlights:
+- **Supervised ML pipeline** with hyperparameter search and probability threshold tuning
+- **Explainability** via SHAP integration to visualize feature impacts
+- **End‑to‑end demo** including Jupyter notebook and slide deck materials
+- **Modular design** for batch and (future) real‑time inference
 
 ---
 
-## 🧪 Dataset Info
-
-- **Dataset:** CICIDS2017
-- **Type:** Labeled flow-level intrusion detection data
-- **Size:** 8 CSVs (~200MB total)
-- **Source:** Canadian Institute for Cybersecurity (UNB)
-- **Current status:** Stored locally under `data/cicids2017/`, not pushed due to GitHub LFS limit
-
----
-
-## 🧰 Tech Stack
-
-| Area          | Tool                        | Purpose                                 |
-|---------------|-----------------------------|-----------------------------------------|
-| Language      | Python 3.11                 | Core programming                        |
-| ML            | scikit-learn, XGBoost       | Modeling & evaluation                   |
-| EDA           | pandas, seaborn, matplotlib | Data exploration                        |
-| File Handling | Git LFS, `os`, `gdown`      | Large file management, scripting        |
-| Notebook Env  | Jupyter                     | EDA, experimentation                    |
-| Optional      | MLflow, joblib              | Tracking & model serialization          |
+## 📁 Repository Structure
+```
+ml-ids-analyzer/
+├── ml_ids_analyzer/          # Core library package
+│   ├── config.py            # YAML configuration loader
+│   ├── preprocessing/       # Data cleaning & feature engineering
+│   ├── modeling/            # Training, tuning & evaluation
+│   ├── inference/           # Batch & streaming prediction scripts
+│   └── evaluate.py          # Metrics, plots & explainability
+├── notebooks/               # Jupyter notebooks (EDA, demo)
+├── data/                    # Raw & processed datasets
+├── outputs/                 # Model, scaler & prediction outputs
+├── Dockerfile               # Containerize the pipeline
+├── setup.py                 # Packaging metadata & console scripts
+├── requirements.txt         # Python dependencies
+└── README.md                # This file
+```
 
 ---
 
-## 💡 Notes & Ideas
+## 🛠 Features & Pipeline
+1. **Data Ingestion & Cleaning**
+   - Load CICIDS2017 flow‑level intrusion data
+   - Handle missing/infinite values and drop low‑quality rows
+   - Scale features with `StandardScaler`
 
-- Incorporate time-based alert patterns (burst rate, session grouping)
-- Explore feature selection techniques (correlation matrix, recursive elimination)
-- Consider using entropy of destination ports or payload sizes
-- Keep output human-readable (valid/invalid + % confidence)
-- Optional extension: integrate with Suricata live output + web dashboard
-- Stretch goal: publish results in a student cybersecurity research forum
+2. **Model Training & Hyperparameter Search**
+   - Baseline `RandomForestClassifier`
+   - `RandomizedSearchCV` over key parameters (`n_estimators`, `max_depth`, `min_samples_leaf`)
+   - 5‑fold cross‑validation for robust performance estimates
+
+3. **Threshold Tuning**
+   - Precision–Recall curve plotting
+   - Automatic selection of probability cutoff maximizing F1‑score
+
+4. **Evaluation & Explainability**
+   - Classification report, ROC AUC, confusion matrix visualizations
+   - SHAP summary plots to interpret feature contributions
+
+5. **Inference**
+   - Batch predictions via `mlids-predict` console script
+   - Applies the tuned threshold for real‑world decision making
+
+6. **Demo & Documentation**
+   - Jupyter notebook `03_demo.ipynb` showcasing end‑to‑end workflow
+   - Slide deck summarizing Purpose, Data, Methods, Results, and Next Steps
 
 ---
 
+## 📚 Quickstart
+```bash
+# Clone the repository
 git clone https://github.com/AlexZimpher/ml-ids-analyzer.git
+cd ml-ids-analyzer
 
+# Set up a virtual environment
+python3 -m venv venv
+source venv/bin/activate   # On Windows: .\venv\Scripts\Activate.ps1
+
+# Install dependencies and the package
+pip install --upgrade pip
 pip install -r requirements.txt
+pip install -e .
+
+# Run the pipeline
+mlids-preprocess          # Clean & feature-engineer data
+mlids-train               # Train model with hyperparameter search & tuning
+mlids-train --no-search   # Fast training with default parameters
+mlids-predict             # Generate predictions on new alerts
+```
 
 ---
 
-## 👥 Authors
-- Alexander Zimpher @AlexZimpher
-- Spencer Hendren @SnakAttack
+## 📊 Demo Notebook
+Explore `notebooks/03_demo.ipynb` to see:
+- Model & scaler loading
+- Sample data ingestion
+- Probability generation & threshold application
+- Performance metrics and plots (confusion matrix, ROC & PR curves)
 
 ---
+
+## 🎯 Tech Stack
+| Area                | Tools                             |
+|---------------------|-----------------------------------|
+| Language            | Python 3.11                       |
+| ML & Modeling       | scikit-learn, XGBoost             |
+| Data & EDA          | pandas, seaborn, matplotlib       |
+| Explainability      | SHAP                              |
+| Packaging & CLI     | setuptools, console_scripts       |
+| Deployment          | Docker, docker-compose            |
+
+---
+
+## 🔮 Future Directions
+- **Real‑time integration:** Stream Suricata EVE JSON for live inference
+- **Web dashboard:** Interactive threshold adjustment via Flask/Streamlit
+- **Continuous retraining:** Automate hyperparameter tuning on data drift
