@@ -7,8 +7,13 @@ import logging
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
+<<<<<<< HEAD
 from ml_ids_analyzer.modeling.evaluate import evaluate_model, explain_model
 from config import cfg
+=======
+from evaluate import evaluate_model, explain_model
+from ml_ids_analyzer.config import cfg
+from ml_ids_analyzer.modeling.evaluate import evaluate_model, explain_model
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
@@ -57,3 +62,4 @@ def train_model():
 
 if __name__ == "__main__":
     train_model()
+
