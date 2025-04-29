@@ -7,7 +7,7 @@ import logging
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
-from evaluate import evaluate_model, explain_model
+from ml_ids_analyzer.modeling.evaluate import evaluate_model, explain_model
 from config import cfg
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
