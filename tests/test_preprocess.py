@@ -10,3 +10,4 @@ def test_clean_and_label_basic():
     cleaned = clean_and_label(df)
     assert "Label" in cleaned.columns
     assert set(cleaned["Label"].unique()) <= {0, 1}
+

@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 import logging
-from config import cfg
+from ml_ids_analyzer.config import cfg
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
@@ -51,3 +51,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
