@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import joblib
 import logging
-from src.config import cfg
+from config import cfg
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
 
