@@ -40,11 +40,8 @@ def search_hyperparameters(X_train: np.ndarray, y_train: pd.Series) -> RandomFor
     Perform RandomizedSearchCV using the 'search_params' in RF_CONFIG.
     Returns the best estimator.
     """
-    # Extract base RF parameters (excluding search space)
     base_params = {k: v for k, v in RF_CONFIG.items() if k != "search_params"}
     rf = RandomForestClassifier(**base_params)
-
-    # Define search space
     param_dist = RF_CONFIG.get("search_params", {})
 
     search = RandomizedSearchCV(
@@ -107,5 +104,10 @@ def train_model() -> None:
     logging.info("Saved scaler        → %s", SCALER_FILE)
 
 
-if __name__ == "__main__":
+def main():
+    """Console-script entry point."""
     train_model()
+
+
+if __name__ == "__main__":
+    main()
