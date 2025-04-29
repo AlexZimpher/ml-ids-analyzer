@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import joblib
 import logging
-from config import cfg
+from ml_ids_analyzer.config import cfg
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
@@ -51,3 +51,4 @@ def predict_new_data():
 
 if __name__ == "__main__":
     predict_new_data()
+
