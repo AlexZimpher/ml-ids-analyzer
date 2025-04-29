@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 import logging
-from src.config import cfg
+from config import cfg
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
 
