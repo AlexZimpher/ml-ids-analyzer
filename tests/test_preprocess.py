@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from src.preprocess import clean_and_label
+from preprocess import clean_and_label
 
 def test_clean_and_label_basic():
     df = pd.DataFrame({
