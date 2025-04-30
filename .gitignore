@@ -5,6 +5,8 @@ __pycache__/
 
 # Distribution / packaging
 *.egg-info/
+ml_ids_analyzer.egg-info/
+src/ml_ids_analyzer.egg-info/
 dist/
 build/
 
@@ -31,5 +33,5 @@ Thumbs.db
 outputs/
 *.log
 
-# Optional data directories
+# Data directories (optional: uncomment if you don’t want to track datasets)
 # data/
