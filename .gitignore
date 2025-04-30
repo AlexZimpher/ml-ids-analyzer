@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+tests/__pycache__/
 *.py[cod]
 *$py.class
 
@@ -32,6 +33,19 @@ Thumbs.db
 # Logs and outputs
 outputs/
 *.log
+outputs/*.csv
+outputs/*.joblib
+outputs/placeholder
 
-# Data directories (optional: uncomment if you don’t want to track datasets)
-# data/
+# Keep useful plots
+!outputs/*.png
+
+# Data files
+data/**/*.csv
+!data/cicids2017_clean.csv
+!data/new_data.csv
+data/processed/
+data/raw/
+
+# Docker build context exclusions (optional)
+__dockerignore__
