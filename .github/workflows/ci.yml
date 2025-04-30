@@ -22,7 +22,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Setup Python
+      # 2. Set up Python
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -55,6 +55,10 @@ jobs:
         if: matrix.python-version == '3.11' && success()
         uses: codecov/codecov-action@v3
 
-      # 7. Lint with Flake8
+      # 7. Debug: show flake8 config to confirm ignores
+      - name: Dump flake8 configuration
+        run: flake8 --show-config
+
+      # 8. Lint with Flake8
       - name: Lint with Flake8
         run: flake8 src/ml_ids_analyzer tests
