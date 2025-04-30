@@ -90,4 +90,18 @@ def tune_threshold(model, X_val, y_val) -> float:
     )
     plt.xlabel("Recall")
     plt.ylabel("Precision")
-    plt.title("Precision–
+    plt.title("Precision–Recall Curve")
+    plt.legend()
+    plt.tight_layout()
+
+    out_path = OUTPUT_DIR / "precision_recall_curve.png"
+    plt.savefig(out_path)
+    logging.info("Saved Precision–Recall curve to %s", out_path)
+    plt.close()
+
+    logging.info(
+        "Chosen threshold: %.3f with best F1: %.3f",
+        best_thr,
+        best_f1,
+    )
+    return best_thr
