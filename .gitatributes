@@ -1,0 +1,26 @@
+# Always normalize line endings for text files
+* text=auto
+
+# Explicitly set common types
+*.py   text eol=lf
+*.md   text eol=lf
+*.yml  text eol=lf
+
+# Ensure CSVs stay as text (and track large datasets via LFS)
+*.csv  text diff
+
+# Use Git LFS for large raw data files
+data/*.csv filter=lfs diff=lfs merge=lfs -text
+
+# Jupyter notebooks (binary) via LFS
+*.ipynb filter=lfs diff=lfs merge=lfs -text
+
+# Images via LFS
+*.png  filter=lfs diff=lfs merge=lfs -text
+*.jpg  filter=lfs diff=lfs merge=lfs -text
+
+# Ignore generated egg-info
+*.egg-info/* export-ignore
+
+# CI configs remain text
+.github/** text eol=lf
