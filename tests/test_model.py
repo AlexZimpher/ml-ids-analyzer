@@ -1,6 +1,5 @@
 import pytest
-from model import train_model
-
+from ml_ids_analyzer.model import train_model
 
 def test_train_model_runs():
     # Smoke test: training should run without exceptions on minimal config
