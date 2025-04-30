@@ -27,10 +27,6 @@ Thumbs.db
 # IDE settings
 .vscode/
 
-# Temporary or local scripts
-fix-imports.ps1
-Files.txt
-
 # Logs and outputs
 outputs/
 *.log
