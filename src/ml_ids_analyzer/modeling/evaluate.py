@@ -12,9 +12,6 @@ import logging
 import os
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")  # non-interactive backend to avoid blocking
-
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import (
@@ -23,6 +20,9 @@ from sklearn.metrics import (
     roc_auc_score,
     precision_recall_curve,
 )
+
+import matplotlib
+matplotlib.use("Agg")  # non-interactive backend to avoid blocking
 
 # Ensure outputs directory exists
 OUTPUT_DIR = Path("outputs")
@@ -90,18 +90,4 @@ def tune_threshold(model, X_val, y_val) -> float:
     )
     plt.xlabel("Recall")
     plt.ylabel("Precision")
-    plt.title("Precision–Recall Curve")
-    plt.legend()
-    plt.tight_layout()
-
-    out_path = OUTPUT_DIR / "precision_recall_curve.png"
-    plt.savefig(out_path)
-    logging.info("Saved Precision–Recall curve to %s", out_path)
-    plt.close()
-
-    logging.info(
-        "Chosen threshold: %.3f with best F1: %.3f",
-        best_thr,
-        best_f1,
-    )
-    return best_thr
+    plt.title("Precision–
