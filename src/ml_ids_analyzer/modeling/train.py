@@ -5,6 +5,7 @@ Training entry-point for ML-IDS-Analyzer.
 Loads cleaned CICIDS2017 data, optionally performs hyperparameter search,
 threshold tuning, evaluation, and saves model + scaler + predictions.
 """
+
 import os
 import logging
 import argparse
@@ -30,14 +31,14 @@ logging.basicConfig(
 )
 
 # --- Constants from config ---
-DATA_FILE   = cfg["data"]["clean_file"]
-OUTPUT_DIR  = cfg["paths"]["output_dir"]
-PRED_CSV    = cfg["paths"]["predictions"]
-MODEL_FILE  = cfg["paths"]["model_file"]
+DATA_FILE = cfg["data"]["clean_file"]
+OUTPUT_DIR = cfg["paths"]["output_dir"]
+PRED_CSV = cfg["paths"]["predictions"]
+MODEL_FILE = cfg["paths"]["model_file"]
 SCALER_FILE = cfg["paths"]["scaler_file"]
-FEATURES    = cfg["features"]
-LABEL       = cfg["label_column"]
-RF_CONFIG   = cfg["model"]["random_forest"]
+FEATURES = cfg["features"]
+LABEL = cfg["label_column"]
+RF_CONFIG = cfg["model"]["random_forest"]
 
 
 def _get_base_rf_params() -> dict:
@@ -87,7 +88,8 @@ def train_model(no_search: bool = False) -> None:
 
     # --- Train/Test Split ---
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y,
+        X,
+        y,
         test_size=0.3,
         stratify=y,
         random_state=RF_CONFIG.get("random_state", None),
@@ -96,7 +98,7 @@ def train_model(no_search: bool = False) -> None:
     # --- Feature Scaling ---
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled  = scaler.transform(X_test)
+    X_test_scaled = scaler.transform(X_test)
 
     # --- Model Training ---
     if not no_search and "search_params" in RF_CONFIG:
@@ -116,8 +118,8 @@ def train_model(no_search: bool = False) -> None:
     )
     best_thr = tune_threshold(model, X_val, y_val)
     logging.info("Using probability threshold: %.3f", best_thr)
-    
-    probs_final  = model.predict_proba(X_final)[:, 1]
+
+    probs_final = model.predict_proba(X_final)[:, 1]
     y_pred_final = (probs_final >= best_thr).astype(int)
 
     # --- Evaluation & Explainability ---
@@ -126,8 +128,9 @@ def train_model(no_search: bool = False) -> None:
 
     # --- Save Outputs ---
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    pd.DataFrame({"Actual": y_final, "Predicted": y_pred_final}) \
-      .to_csv(PRED_CSV, index=False)
+    pd.DataFrame({"Actual": y_final, "Predicted": y_pred_final}).to_csv(
+        PRED_CSV, index=False
+    )
     joblib.dump(model, MODEL_FILE)
     joblib.dump(scaler, SCALER_FILE)
 
@@ -142,8 +145,9 @@ def main() -> None:
         description="Train the ML-IDS-Analyzer model with optional hyperparameter search."
     )
     parser.add_argument(
-        "--no-search", action="store_true",
-        help="Skip hyperparameter tuning and train with default RF_CONFIG"
+        "--no-search",
+        action="store_true",
+        help="Skip hyperparameter tuning and train with default RF_CONFIG",
     )
     args = parser.parse_args()
     train_model(no_search=args.no_search)
