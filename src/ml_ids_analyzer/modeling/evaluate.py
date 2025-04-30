@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Evaluation and explainability utilities for ML-IDS-Analyzer.
+
 Includes:
 - evaluate_model: prints classification report, ROC AUC, and saves confusion matrix plot.
 - explain_model: SHAP summary plot of training data.
@@ -12,8 +13,8 @@ import os
 from pathlib import Path
 
 import matplotlib
-# use non-interactive backend to avoid blocking on plt.show()
-matplotlib.use("Agg")
+matplotlib.use("Agg")  # non-interactive backend to avoid blocking
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import (
@@ -23,8 +24,7 @@ from sklearn.metrics import (
     precision_recall_curve,
 )
 
-
-# ensure outputs directory exists
+# Ensure outputs directory exists
 OUTPUT_DIR = Path("outputs")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -60,7 +60,7 @@ def explain_model(model, X_train) -> None:
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(X_train)
 
-    # create summary plot without blocking
+    # Create summary plot without blocking
     shap.summary_plot(shap_values, X_train, show=False)
     out_path = OUTPUT_DIR / "shap_summary.png"
     plt.savefig(out_path)
@@ -70,7 +70,8 @@ def explain_model(model, X_train) -> None:
 
 def tune_threshold(model, X_val, y_val) -> float:
     """
-    Compute Precision–Recall curve, save it, and return threshold maximizing F1 score.
+    Compute Precision–Recall curve, save it,
+    and return threshold maximizing F1 score.
     """
     prob_pos = model.predict_proba(X_val)[:, 1]
     precision, recall, thresholds = precision_recall_curve(y_val, prob_pos)
@@ -83,8 +84,9 @@ def tune_threshold(model, X_val, y_val) -> float:
     plt.figure(figsize=(6, 4))
     plt.plot(recall, precision, label="PR curve")
     plt.scatter(
-        recall[best_idx], precision[best_idx],
-        label=f"Best F1={best_f1:.2f} @thr={best_thr:.2f}"
+        recall[best_idx],
+        precision[best_idx],
+        label=f"Best F1={best_f1:.2f} @thr={best_thr:.2f}",
     )
     plt.xlabel("Recall")
     plt.ylabel("Precision")
@@ -97,5 +99,9 @@ def tune_threshold(model, X_val, y_val) -> float:
     logging.info("Saved Precision–Recall curve to %s", out_path)
     plt.close()
 
-    logging.info("Chosen threshold: %.3f with best F1: %.3f", best_thr, best_f1)
+    logging.info(
+        "Chosen threshold: %.3f with best F1: %.3f",
+        best_thr,
+        best_f1,
+    )
     return best_thr

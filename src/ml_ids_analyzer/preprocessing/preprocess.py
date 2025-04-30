@@ -14,15 +14,16 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(mes
 _logger = logging.getLogger(__name__)
 
 # pull settings from config.yaml
-DATA_DIR = cfg["data"]["raw_dir"]                # e.g. "data/cicids2017" :contentReference[oaicite:0]{index=0}&#8203;:contentReference[oaicite:1]{index=1}
-OUTPUT_CLEAN = cfg["data"]["clean_file"]         # e.g. "data/cicids2017_clean.csv" :contentReference[oaicite:2]{index=2}&#8203;:contentReference[oaicite:3]{index=3}
-LABEL_COL = cfg["label_column"]                  # e.g. "Label" :contentReference[oaicite:4]{index=4}&#8203;:contentReference[oaicite:5]{index=5}
-MISSING_THRESH = cfg["cleaning"]["missing_threshold"]  # e.g. 0.9 :contentReference[oaicite:6]{index=6}&#8203;:contentReference[oaicite:7]{index=7}
+DATA_DIR = cfg["data"]["raw_dir"]
+OUTPUT_CLEAN = cfg["data"]["clean_file"]
+LABEL_COL = cfg["label_column"]
+MISSING_THRESH = cfg["cleaning"]["missing_threshold"]
 
 
 def load_and_merge_csvs(data_dir: Optional[str] = None) -> pd.DataFrame:
     """
-    Read all .csv files from `data_dir`, strip column whitespace, and concatenate into a single DataFrame.
+    Read all .csv files from `data_dir`, strip column whitespace,
+    and concatenate into a single DataFrame.
     """
     data_dir = data_dir or DATA_DIR
     if not os.path.isdir(data_dir):
@@ -47,38 +48,36 @@ def load_and_merge_csvs(data_dir: Optional[str] = None) -> pd.DataFrame:
 
 def clean_and_label(df: pd.DataFrame) -> pd.DataFrame:
     """
-    - Strip column names  
-    - Drop any column with > (1 - MISSING_THRESH) fraction of missing values  
-    - Drop columns that are constant or binary  
-    - Drop any remaining rows with NA  
-    - Map LABEL_COL: 'BENIGN' → 0, everything else → 1  
+    Clean and label the input DataFrame:
+    - Strip column names
+    - Drop columns with > (1 - MISSING_THRESH) missing values
+    - Drop constant or binary columns
+    - Drop rows with missing values
+    - Map LABEL_COL: 'BENIGN' → 0, others → 1
     """
-    # clean column names
     df = df.copy()
     df.columns = df.columns.str.strip()
 
-    # drop wide‐spread missing columns
     thresh = int(MISSING_THRESH * len(df))
     df = df.dropna(axis=1, thresh=thresh)
 
-    # drop columns with ≤1 unique value
     nun = df.nunique(dropna=False)
     to_drop = nun[nun <= 1].index.tolist()
     if to_drop:
         _logger.info("Dropping constant columns: %s", to_drop)
         df = df.drop(columns=to_drop)
 
-    # drop any row with missing data
     before = df.shape[0]
     df = df.dropna()
     after = df.shape[0]
     if before != after:
         _logger.info("Dropped %d rows with missing values", before - after)
 
-    # label encoding
     if LABEL_COL not in df.columns:
         raise KeyError(f"Expected a column named '{LABEL_COL}'")
-    df[LABEL_COL] = df[LABEL_COL].apply(lambda v: 0 if str(v).upper() == "BENIGN" else 1)
+    df[LABEL_COL] = df[LABEL_COL].apply(
+        lambda v: 0 if str(v).upper() == "BENIGN" else 1
+    )
 
     _logger.info("After cleaning & labeling: %s", df.shape)
     return df
@@ -86,7 +85,7 @@ def clean_and_label(df: pd.DataFrame) -> pd.DataFrame:
 
 def main() -> None:
     """
-    Pipeline entrypoint: merge, clean, label and write out the cleaned CSV.
+    Pipeline entrypoint: merge, clean, label, and write out the cleaned CSV.
     """
     df_raw = load_and_merge_csvs(DATA_DIR)
     df_clean = clean_and_label(df_raw)
