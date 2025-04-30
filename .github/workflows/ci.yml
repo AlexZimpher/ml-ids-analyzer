@@ -9,19 +9,50 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    strategy:
+      cache-dependency-path: ~/.cache/pip
+      matrix:
+        python-version: [3.9, 3.10, 3.11]
+
     steps:
+      # 1. Checkout the repository
       - uses: actions/checkout@v3
-      - name: Set up Python
+
+      # 2. Set up Python from the matrix
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: ${{ matrix.python-version }}
+
+      # 3. Cache pip packages
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # 4. Install your package and dependencies
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Run tests
-        run: pytest --maxfail=1 --disable-warnings -q
-      - name: Lint
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -e .                    # install ml-ids-analyzer from src/
+          pip install -r requirements.txt     # install other dependencies
+          pip install pytest flake8 coverage  # tools for testing & linting
+
+      # 5. Run tests with coverage
+      - name: Run unit tests
         run: |
-          pip install flake8
-          flake8 .
+          pytest --maxfail=1 --disable-warnings -q --cov=src/ml_ids_analyzer
+
+      # 6. Report coverage to GitHub (optional)
+      - name: Upload coverage to Codecov
+        if: success() && matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v3
+
+      # 7. Lint with flake8
+      - name: Lint with Flake8
+        run: |
+          flake8 src/ml_ids_analyzer tests
