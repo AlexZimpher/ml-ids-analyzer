@@ -14,6 +14,10 @@ setup(
         "PyYAML",
         "joblib",
         "click",
+        "fastapi",
+        "uvicorn[standard]",
+        "pydantic",
+        "httpx",
     ],
     entry_points={
         "console_scripts": [
