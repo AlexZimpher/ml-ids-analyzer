@@ -9,7 +9,6 @@ Includes:
 """
 
 import logging
-import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -22,6 +21,7 @@ from sklearn.metrics import (
 )
 
 import matplotlib
+
 matplotlib.use("Agg")  # non-interactive backend to avoid blocking
 
 # Ensure outputs directory exists

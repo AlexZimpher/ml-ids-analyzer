@@ -11,17 +11,16 @@ import joblib
 from ml_ids_analyzer.config import cfg
 
 # module‐level logger
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s: %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 _logger = logging.getLogger(__name__)
 
 # Safely pull config with defaults
 model_cfg = cfg.get("model", {})
 infer_cfg = cfg.get("inference", {})
 
-DEFAULT_INPUT: str = infer_cfg.get("input_csv", cfg.get("data", {}).get("clean_file", "data/cicids2017_clean.csv"))
+DEFAULT_INPUT: str = infer_cfg.get(
+    "input_csv", cfg.get("data", {}).get("clean_file", "data/cicids2017_clean.csv")
+)
 DEFAULT_MODEL: str = model_cfg.get("model_file", "outputs/model.joblib")
 DEFAULT_SCALER: Optional[str] = model_cfg.get("scaler_file", None)
 DEFAULT_OUTPUT: str = infer_cfg.get("output_csv", "outputs/predictions.csv")
