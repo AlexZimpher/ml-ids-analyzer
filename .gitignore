@@ -30,14 +30,11 @@ notebooks/
 
 # Logs and outputs
 *.log
-outputs/
-!outputs/*.png
 
 # Data files
 data/raw/
 data/processed/
 !data/cicids2017_clean.csv
-!data/new_data.csv
 
 # Docker build context exclusions (optional)
 __dockerignore__
