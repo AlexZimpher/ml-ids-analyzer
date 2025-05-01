@@ -30,8 +30,6 @@ notebooks/
 
 # Logs and outputs
 *.log
-outputs/
-!outputs/*.png
 
 # Data files
 data/raw/
