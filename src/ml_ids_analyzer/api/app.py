@@ -43,11 +43,15 @@ class PredictResponse(BaseModel):
 def predict(request: PredictRequest):
     # Validate model file
     if not os.path.isfile(request.model_file):
-        raise HTTPException(status_code=400, detail=f"Model not found: {request.model_file}")
+        raise HTTPException(
+            status_code=400, detail=f"Model not found: {request.model_file}"
+        )
 
     # Validate scaler file (if provided)
     if request.scaler_file and not os.path.isfile(request.scaler_file):
-        raise HTTPException(status_code=400, detail=f"Scaler not found: {request.scaler_file}")
+        raise HTTPException(
+            status_code=400, detail=f"Scaler not found: {request.scaler_file}"
+        )
 
     # Load artifacts
     try:
@@ -89,4 +93,3 @@ def predict(request: PredictRequest):
         results.append(rec)
 
     return PredictResponse(results=results)
-

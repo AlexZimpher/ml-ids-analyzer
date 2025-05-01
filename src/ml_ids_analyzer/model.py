@@ -10,6 +10,7 @@ __all__ = ["train_model", "main"]
 
 _logger = logging.getLogger(__name__)
 
+
 def main() -> None:
     """Entry point for the `mlids-train` console script."""
     try:

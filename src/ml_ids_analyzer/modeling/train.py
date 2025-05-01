@@ -25,10 +25,7 @@ from ml_ids_analyzer.modeling.evaluate import (
 )
 
 # --- Logging Configuration ---
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s: %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
 # --- Constants from config ---
 DATA_FILE = cfg["data"]["clean_file"]

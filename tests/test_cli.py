@@ -1,7 +1,6 @@
 # tests/test_cli.py
 
 import sys
-import pytest
 from unittest.mock import MagicMock
 
 import ml_ids_analyzer.model as model_mod
@@ -41,4 +40,3 @@ def test_train_main_parses_no_search_flag(monkeypatch):
 
     # Should have been called with no_search=True
     mock_train.assert_called_once_with(no_search=True)
-

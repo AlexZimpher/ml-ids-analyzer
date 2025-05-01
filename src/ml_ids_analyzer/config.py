@@ -7,4 +7,3 @@ CONFIG_PATH = os.path.join(BASE_DIR, "config", "config.yaml")
 
 with open(CONFIG_PATH, "r") as f:
     cfg = yaml.safe_load(f)
-
