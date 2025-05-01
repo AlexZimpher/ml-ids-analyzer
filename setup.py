@@ -14,6 +14,7 @@ setup(
         "PyYAML",
         "joblib",
         "click",
+        "matplotlib",
         "fastapi",
         "uvicorn[standard]",
         "pydantic",
