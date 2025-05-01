@@ -1,15 +1,22 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-tests/__pycache__/
 *.py[cod]
 *$py.class
 
+# Mypy cache
+.mypy_cache/
+
+# Test cache & coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
 # Distribution / packaging
+dist/
+build/
 *.egg-info/
 ml_ids_analyzer.egg-info/
 src/ml_ids_analyzer.egg-info/
-dist/
-build/
 
 # Virtual environments
 .env
@@ -17,35 +24,28 @@ build/
 env/
 venv/
 
-# Test cache
-.pytest_cache/
-
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
+notebooks/
+
+# Logs and outputs
+*.log
+outputs/
+!outputs/*.png
+
+# Data files
+data/raw/
+data/processed/
+!data/cicids2017_clean.csv
+!data/new_data.csv
+
+# Docker build context exclusions (optional)
+__dockerignore__
+
+# IDE settings
+.vscode/
+.idea/
 
 # System files
 .DS_Store
 Thumbs.db
-
-# IDE settings
-.vscode/
-
-# Logs and outputs
-outputs/
-*.log
-outputs/*.csv
-outputs/*.joblib
-outputs/placeholder
-
-# Keep useful plots
-!outputs/*.png
-
-# Data files
-data/**/*.csv
-!data/cicids2017_clean.csv
-!data/new_data.csv
-data/processed/
-data/raw/
-
-# Docker build context exclusions (optional)
-__dockerignore__

@@ -1,105 +1,117 @@
-#!/usr/bin/env python3
-"""
-Inference entry-point for ML-IDS-Analyzer.
+# ml_ids_analyzer/inference/predict.py
 
-Loads saved model + scaler, reads new CSV of alerts,
-applies the tuned probability threshold (configurable),
-and writes out predicted labels + confidence.
-"""
-
+import os
 import logging
-from argparse import ArgumentParser
-from pathlib import Path
+from typing import Optional
 
-import numpy as np
+import click
 import pandas as pd
 import joblib
 
 from ml_ids_analyzer.config import cfg
 
-
-# configure logging once at import
+# module‐level logger
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s: %(message)s"
 )
+_logger = logging.getLogger(__name__)
+
+# Safely pull config with defaults
+model_cfg = cfg.get("model", {})
+infer_cfg = cfg.get("inference", {})
+
+DEFAULT_INPUT: str = infer_cfg.get("input_csv", cfg.get("data", {}).get("clean_file", "data/cicids2017_clean.csv"))
+DEFAULT_MODEL: str = model_cfg.get("model_file", "outputs/model.joblib")
+DEFAULT_SCALER: Optional[str] = model_cfg.get("scaler_file", None)
+DEFAULT_OUTPUT: str = infer_cfg.get("output_csv", "outputs/predictions.csv")
+THRESHOLD: float = infer_cfg.get("threshold", 0.5)
 
 
-def predict_file(
-    model_path: Path,
-    scaler_path: Path,
-    features: list[str],
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option(
+    "--input-file",
+    default=DEFAULT_INPUT,
+    show_default=True,
+    help="Path to CSV of features to score",
+)
+@click.option(
+    "--model-file",
+    default=DEFAULT_MODEL,
+    show_default=True,
+    help="Path to saved model (.joblib)",
+)
+@click.option(
+    "--scaler-file",
+    default=DEFAULT_SCALER,
+    show_default=True,
+    help="Path to saved scaler (.joblib), if used",
+)
+@click.option(
+    "--output-file",
+    default=DEFAULT_OUTPUT,
+    show_default=True,
+    help="Where to write predictions CSV",
+)
+@click.option(
+    "--threshold",
+    default=THRESHOLD,
+    show_default=True,
+    help="Probability threshold for classifying an attack",
+)
+def main(
+    input_file: str,
+    model_file: str,
+    scaler_file: Optional[str],
+    output_file: str,
     threshold: float,
-    input_csv: Path,
-    output_csv: Path,
 ) -> None:
-    """Run inference: read, scale, predict, and save results."""
-    # Load artifacts
-    model = joblib.load(model_path)
-    scaler = joblib.load(scaler_path)
-    logging.info("Loaded model   → %s", model_path)
-    logging.info("Loaded scaler  → %s", scaler_path)
-    logging.info("Using cutoff   → %.3f", threshold)
+    """
+    Load model (and optional scaler), read INPUT_FILE, run predictions,
+    and write results to OUTPUT_FILE.
+    """
+    # 1. Validate files
+    for path, desc in [
+        (input_file, "input CSV"),
+        (model_file, "model file"),
+    ]:
+        if not os.path.isfile(path):
+            _logger.error("Missing %s: %s", desc, path)
+            raise SystemExit(1)
+    if scaler_file and not os.path.isfile(scaler_file):
+        _logger.error("Missing scaler file: %s", scaler_file)
+        raise SystemExit(1)
 
-    # Read & clean input
-    logging.info("Reading input  → %s", input_csv)
-    df = pd.read_csv(input_csv, skipinitialspace=True)
-    df.columns = df.columns.str.strip()
+    # 2. Load artifacts
+    _logger.info("Loading model from %s", model_file)
+    model = joblib.load(model_file)
+    scaler = None
+    if scaler_file:
+        _logger.info("Loading scaler from %s", scaler_file)
+        scaler = joblib.load(scaler_file)
 
-    # Replace infinities and NaNs
-    df.replace([np.inf, -np.inf], pd.NA, inplace=True)
-    if df.isna().any().any():
-        logging.info("Filling NaNs with 0")
-        df.fillna(0, inplace=True)
+    # 3. Read input
+    _logger.info("Reading input data from %s", input_file)
+    df = pd.read_csv(input_file)
+    features = df.drop(columns=[cfg.get("label_column", "Label")], errors="ignore")
 
-    # Extract & scale features
-    X = df[features]
-    X_scaled = scaler.transform(X)
+    # 4. Apply scaler
+    X = features.values
+    if scaler is not None:
+        X = scaler.transform(X)
 
-    # Predict
-    if hasattr(model, "predict_proba"):
-        probs = model.predict_proba(X_scaled)[:, 1]
-        df["Confidence (Attack)"] = probs
-        df["Predicted Label"] = (probs >= threshold).astype(int)
-    else:
-        df["Predicted Label"] = model.predict(X_scaled)
+    # 5. Predict probabilities and labels
+    _logger.info("Running predictions")
+    probs = model.predict_proba(X)[:, 1]
+    preds = (probs >= threshold).astype(int)
 
-    # Persist results
-    output_csv.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(output_csv, index=False)
-    logging.info("Wrote predictions → %s", output_csv)
-
-
-def main():
-    parser = ArgumentParser(description="ML-IDS-Analyzer inference tool")
-    parser.add_argument(
-        "-i", "--input-csv",
-        type=Path,
-        default=Path(cfg["data"].get("new_input_file", "data/new_data.csv")),
-        help="Path to input CSV (default from config)"
-    )
-    parser.add_argument(
-        "-o", "--output-csv",
-        type=Path,
-        default=Path(cfg["paths"]["new_predictions"]),
-        help="Where to write predictions (default from config)"
-    )
-    parser.add_argument(
-        "-t", "--threshold",
-        type=float,
-        default=cfg["model"].get("threshold", 0.5),
-        help="Probability cutoff for positive class"
-    )
-    args = parser.parse_args()
-
-    predict_file(
-        model_path=Path(cfg["paths"]["model_file"]),
-        scaler_path=Path(cfg["paths"]["scaler_file"]),
-        features=cfg["features"],
-        threshold=args.threshold,
-        input_csv=args.input_csv,
-        output_csv=args.output_csv,
-    )
+    # 6. Assemble and write output
+    out = features.copy()
+    out["prob_attack"] = probs
+    out["pred_attack"] = preds
+    os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
+    out.to_csv(output_file, index=False)
+    _logger.info("Wrote predictions to %s", output_file)
 
 
 if __name__ == "__main__":

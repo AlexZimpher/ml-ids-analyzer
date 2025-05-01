@@ -51,3 +51,10 @@ jobs:
 
       - name: Lint with Flake8
         run: flake8 --config setup.cfg src/ml_ids_analyzer tests
+
+      - name: Install FastAPI deps
+        run: pip install fastapi uvicorn[standard] pydantic
+
+      - name: Test API
+        run: pytest tests/test_api.py
+
