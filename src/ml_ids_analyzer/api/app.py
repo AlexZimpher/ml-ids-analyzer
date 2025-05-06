@@ -1,5 +1,3 @@
-# src/ml_ids_analyzer/api/app.py
-
 from typing import Any, Dict, List, Optional
 import os
 
@@ -16,22 +14,31 @@ app = FastAPI(
     version=cfg.get("version", "0.1.0"),
 )
 
-# Configuration defaults
-MODEL_PATH = cfg.get("model", {}).get("model_file", "outputs/model.joblib")
-SCALER_PATH = cfg.get("model", {}).get("scaler_file")
-THRESHOLD = cfg.get("inference", {}).get("threshold", 0.5)
+
+@app.get("/", include_in_schema=False)
+def root():
+    return {"message": "ML-IDS-Analyzer API is up. Try POST /predict or GET /health"}
+
+
+@app.get("/health", tags=["health"])
+def health():
+    """Simple liveness probe."""
+    return {"status": "ok"}
 
 
 class PredictRequest(BaseModel):
     data: List[Dict[str, Any]] = Field(..., description="List of feature dicts")
     model_file: Optional[str] = Field(
-        MODEL_PATH, description="Path to trained model (.joblib)"
+        cfg.get("paths", {}).get("model_file", "outputs/model.joblib"),
+        description="Path to trained model (.joblib)",
     )
     scaler_file: Optional[str] = Field(
-        SCALER_PATH, description="Path to scaler artifact (.joblib)"
+        cfg.get("paths", {}).get("scaler_file"),
+        description="Path to scaler artifact (.joblib)",
     )
     threshold: Optional[float] = Field(
-        THRESHOLD, description="Probability threshold to flag an attack"
+        cfg.get("inference", {}).get("threshold", 0.5),
+        description="Probability threshold to flag an attack",
     )
 
 
@@ -53,12 +60,13 @@ def predict(request: PredictRequest):
             status_code=400, detail=f"Scaler not found: {request.scaler_file}"
         )
 
-    # Load artifacts
+    # Load model
     try:
         model = joblib.load(request.model_file)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load model: {e}")
 
+    # Load scaler
     scaler = None
     if request.scaler_file:
         try:
@@ -66,7 +74,7 @@ def predict(request: PredictRequest):
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to load scaler: {e}")
 
-    # Create DataFrame
+    # Build DataFrame
     try:
         df = pd.DataFrame(request.data)
     except Exception as e:
@@ -76,7 +84,7 @@ def predict(request: PredictRequest):
     if scaler:
         X = scaler.transform(X)
 
-    # Run predictions
+    # Predictions
     try:
         probs = model.predict_proba(X)[:, 1]
     except Exception as e:

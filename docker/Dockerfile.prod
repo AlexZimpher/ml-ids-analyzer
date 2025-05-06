@@ -1,0 +1,52 @@
+# docker/Dockerfile.prod
+
+# ─── Builder ────────────────────────────────────────────────────────────────────
+FROM python:3.9-slim-bullseye AS builder
+
+WORKDIR /app
+
+# Install OS tools + venv support
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+       curl build-essential python3-venv \
+  && rm -rf /var/lib/apt/lists/*
+
+# Create & bootstrap a venv
+RUN python3 -m venv /opt/venv \
+  && /opt/venv/bin/pip install --upgrade pip
+
+# Install Poetry into that venv
+RUN curl -sSL https://install.python-poetry.org | /opt/venv/bin/python - \
+  && ln -s /root/.local/bin/poetry /usr/local/bin/poetry
+
+# 1) Install only runtime deps (no dev, no root package)
+COPY pyproject.toml poetry.lock ./
+ENV PATH="/opt/venv/bin:$PATH"
+RUN poetry config virtualenvs.create false \
+  && poetry install --without dev --no-root --no-interaction --no-ansi
+
+# 2) Copy source & config
+COPY src /app/src
+COPY config /app/config
+
+# 3) Normalize entrypoint
+RUN sed -i 's/\r$//' /app/config/entrypoint.sh \
+  && chmod +x /app/config/entrypoint.sh
+
+# ─── Runtime ────────────────────────────────────────────────────────────────────
+FROM python:3.9-slim-bullseye AS runtime
+
+WORKDIR /app
+
+# Bring in the venv and code+config
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /app/src  /app/src
+COPY --from=builder /app/config /app/config
+
+# Activate venv & point imports to /app/src
+ENV PATH="/opt/venv/bin:$PATH"
+ENV PYTHONPATH=/app/src
+
+EXPOSE 8000
+ENTRYPOINT ["./config/entrypoint.sh"]
+CMD ["uvicorn", "ml_ids_analyzer.api.app:app", "--host", "0.0.0.0", "--port", "8000"]

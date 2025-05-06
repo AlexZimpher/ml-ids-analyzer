@@ -5,111 +5,125 @@
 ---
 
 ## 🚀 Overview
-ML-IDS-Analyzer is a portfolio project by two final‑year cybersecurity students, designed to demonstrate applied machine learning techniques in network defense. The system classifies IDS alerts (e.g., from Suricata) into **valid (true positive)** or **invalid (false positive)**, reducing noise and helping small‑scale SOC environments focus on actionable threats.
 
-Key highlights:
-- **Supervised ML pipeline** with hyperparameter search and probability threshold tuning
-- **Explainability** via SHAP integration to visualize feature impacts
-- **End‑to‑end demo** including Jupyter notebook and slide deck materials
-- **Modular design** for batch and (future) real‑time inference
+ML-IDS-Analyzer is a modular machine-learning pipeline for turning raw IDS alerts (e.g. Suricata EVE logs) into actionable predictions (true vs. false positives). Key features:
+
+- **End-to-end ML pipeline** (ingest, preprocess, train, evaluate, infer)
+- **Threshold tuning** to maximize F1 in production
+- **Explainability** via SHAP
+- **CLI tools** and **FastAPI** REST interface
+- **Containerized** for both dev & prod workflows
 
 ---
 
-## 📁 Repository Structure
-```
+## 🗂️ Repository Layout
+
 ml-ids-analyzer/
-├── ml_ids_analyzer/         # Core library package
-│   ├── config.py            # YAML configuration loader
-│   ├── preprocessing/       # Data cleaning & feature engineering
-│   ├── modeling/            # Training, tuning & evaluation
-│   ├── inference/           # Batch & streaming prediction scripts
-│   └── evaluate.py          # Metrics, plots & explainability
-├── notebooks/               # Jupyter notebooks (EDA, demo)
-├── data/                    # Raw & processed datasets
-├── outputs/                 # Model, scaler & prediction outputs
-├── Dockerfile               # Containerize the pipeline
-├── setup.py                 # Packaging metadata & console scripts
-├── requirements.txt         # Python dependencies
-└── README.md                # This file
-```
+├── config/ # Base, dev & prod YAMLs + .env.example + entrypoint
+├── docker/ # Dockerfiles & healthcheck scripts
+├── data/ # Raw & processed datasets
+├── docs/ # Documentation & slide decks
+├── src/
+│ └── ml_ids_analyzer/ # Your application package
+│ ├── api/ # FastAPI application
+│ ├── config/ # In-package loader merging config/*
+│ ├── preprocessing/ # Data cleaning & feature engineering
+│ ├── modeling/ # Train & evaluate code
+│ ├── inference/ # Batch & streaming prediction scripts
+│ └── model.py # CLI entrypoint for training
+├── tests/ # Unit & integration tests
+├── pyproject.toml # Poetry project & dependency management
+├── README.md # This file
+└── .gitignore
+
 
 ---
 
-## 🛠 Features & Pipeline
-1. **Data Ingestion & Cleaning**
-   - Load CICIDS2017 flow‑level intrusion data
-   - Handle missing/infinite values and drop low‑quality rows
-   - Scale features with `StandardScaler`
+## ⚙️ Configuration
 
-2. **Model Training & Hyperparameter Search**
-   - Baseline `RandomForestClassifier`
-   - `RandomizedSearchCV` over key parameters (`n_estimators`, `max_depth`, `min_samples_leaf`)
-   - 5‑fold cross‑validation for robust performance estimates
+All run-time settings live in `config/`:
 
-3. **Threshold Tuning**
-   - Precision–Recall curve plotting
-   - Automatic selection of probability cutoff maximizing F1‑score
+- `base.yaml` → common defaults  
+- `dev.yaml` → overrides for local development  
+- `prod.yaml` → overrides for production deployment  
+- `.env.example` → sample secrets file (copy to `config/.env`)  
+- `entrypoint.sh` → loads `.env` at container start  
 
-4. **Evaluation & Explainability**
-   - Classification report, ROC AUC, confusion matrix visualizations
-   - SHAP summary plots to interpret feature contributions
+Your package code reads and merges these plus any real `$ENV`:
 
-5. **Inference**
-   - Batch predictions via `mlids-predict` console script
-   - Applies the tuned threshold for real‑world decision making
-
-6. **Demo & Documentation**
-   - Jupyter notebook `03_demo.ipynb` showcasing end‑to‑end workflow
-   - Slide deck summarizing Purpose, Data, Methods, Results, and Next Steps
-
----
-
-## 📚 Quickstart
 ```bash
-# Clone the repository
-git clone https://github.com/AlexZimpher/ml-ids-analyzer.git
-cd ml-ids-analyzer
+ENV=dev|prod
+# then ml_ids_analyzer.config.cfg contains {**base, **override, **os.environ}
 
-# Set up a virtual environment
-python3 -m venv venv
-source venv/bin/activate   # On Windows: .\venv\Scripts\Activate.ps1
+🛠️ Quickstart
+1. Local (Poetry + Uvicorn)
 
-# Install dependencies and the package
-pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .
+# 1. Install dependencies
+poetry install
 
-# Run the pipeline
-mlids-preprocess          # Clean & feature-engineer data
-mlids-train               # Train model with hyperparameter search & tuning
-mlids-train --no-search   # Fast training with default parameters
-mlids-predict             # Generate predictions on new alerts
-```
+# 2. Copy your secrets
+cp config/.env.example config/.env
+# (fill in any DB_PASSWORD, API_KEY, etc.)
 
----
+# 3. Run the FastAPI server
+poetry run uvicorn ml_ids_analyzer.api.app:app --reload --port 8000
 
-## 📊 Demo Notebook
-Explore `notebooks/03_demo.ipynb` to see:
-- Model & scaler loading
-- Sample data ingestion
-- Probability generation & threshold application
-- Performance metrics and plots (confusion matrix, ROC & PR curves)
+# 4. Healthcheck
+curl http://localhost:8000/health
 
----
+2. Docker (Development)
 
-## 🎯 Tech Stack
-| Area                | Tools                             |
-|---------------------|-----------------------------------|
-| Language            | Python 3.11                       |
-| ML & Modeling       | scikit-learn, XGBoost             |
-| Data & EDA          | pandas, seaborn, matplotlib       |
-| Explainability      | SHAP                              |
-| Packaging & CLI     | setuptools, console_scripts       |
-| Deployment          | Docker, docker-compose            |
+# 1. Build dev image (mounts your source & config)
+docker build -f docker/Dockerfile.dev -t ml-ids-dev .
 
----
+# 2. Run (mount config/.env so secrets load)
+docker run --rm -p 8000:8000 \
+  -v "$(pwd)/config/.env:/app/config/.env" \
+  ml-ids-dev
 
-## 🔮 Future Directions
-- **Real‑time integration:** Stream Suricata EVE JSON for live inference
-- **Web dashboard:** Interactive threshold adjustment via Flask/Streamlit
-- **Continuous retraining:** Automate hyperparameter tuning on data drift
+# 3. Verify
+curl http://localhost:8000/
+
+3. Docker (Production)
+
+# 1. Build prod image (slimmer, with venv baked in)
+docker build -f docker/Dockerfile.prod -t ml-ids-analyzer:latest .
+
+# 2. Run with your .env mounted
+docker run --rm -p 8000:8000 \
+  -v "$(pwd)/config/.env:/app/config/.env" \
+  ml-ids-analyzer:latest
+
+🔧 CLI Tools
+
+Once installed via Poetry, you have:
+
+mlids-preprocess    # runs preprocessing pipeline
+mlids-train         # trains & tunes model
+mlids-predict       # batch inference script
+
+🧪 Testing
+
+poetry run pytest --maxfail=1 --disable-warnings -q
+
+📊 Demo Notebook
+
+See notebooks/03_demo.ipynb for an end-to-end walkthrough of loading data, training, threshold tuning, SHAP explainability, and inference.
+🎯 Tech Stack
+Layer	Tools
+Language	Python 3.9
+ML & Modeling	scikit-learn, XGBoost
+Data & EDA	pandas, matplotlib
+Explainability	SHAP
+API	FastAPI, Uvicorn
+Packaging & CLI	Poetry
+Deployment	Docker
+🔮 Next Steps
+
+    Real-time streaming of Suricata EVE JSON
+
+    Web dashboard for threshold tweaking
+
+    Automated retraining on data drift
+
+    Monitoring & alerting integration
