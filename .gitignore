@@ -1,48 +1,76 @@
+# ================================
 # Byte-compiled / optimized / DLL files
+# ================================
 __pycache__/
 *.py[cod]
 *$py.class
 
+# ================================
 # Mypy cache
+# ================================
 .mypy_cache/
 
+# ================================
 # Test cache & coverage
+# ================================
 .pytest_cache/
+.ruff_cache/
 .coverage
 htmlcov/
 
+# ================================
 # Distribution / packaging
+# ================================
 dist/
 build/
 *.egg-info/
 ml_ids_analyzer.egg-info/
 src/ml_ids_analyzer.egg-info/
 
-# Virtual environments
-.env
+# ================================
+# Virtual environments & local env
+# ================================
 .venv/
 env/
 venv/
+.env
+config/.env
+docker/.env
 
+# ================================
 # Jupyter Notebook checkpoints
+# ================================
 .ipynb_checkpoints/
 notebooks/
 
+# ================================
 # Logs and outputs
+# ================================
 *.log
+diagnostics/
+outputs/
 
+# ================================
 # Data files
+# ================================
 data/raw/
 data/processed/
 !data/cicids2017_clean.csv
 
-# Docker build context exclusions (optional)
+# ================================
+# Docker build context exclusions
+# ================================
 __dockerignore__
+docker-compose.override.yml
 
+# ================================
 # IDE settings
+# ================================
 .vscode/
 .idea/
 
+# ================================
 # System files
+# ================================
 .DS_Store
 Thumbs.db
