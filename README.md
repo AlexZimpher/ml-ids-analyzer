@@ -49,7 +49,3 @@ poetry run mlids-train
 # Predict from file
 poetry run mlids-predict
 ```
-
-## License
-
-MIT
