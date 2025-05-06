@@ -1,105 +1,91 @@
+# ML-IDS-Analyzer Developer Guide
+
+## Overview
+
+This private developer guide is intended for Alexander and Spencer. It documents setup, development, deployment, and usage procedures for internal use and showcases project competency for job-seeking purposes.
 
 ---
 
-**`DEV_GUIDE.md`** (private, for you & Spencer—drop this before publishing your portfolio):
+## 🛠 Setup
 
-```markdown
-# ML-IDS-Analyzer Developer Guide (🔒 Private)
+### Prerequisites
 
-## 1. Environment Setup
+- Docker Desktop
+- Poetry (automatically installed in containers)
+- Python 3.9 (if running locally, outside Docker)
 
-1. **Python 3.9.22**  
-   - Install from https://www.python.org/downloads/release/python-3922/  
-   - On Windows, add to PATH or use the `py` launcher:  
-     ```ps1
-     py -3.9 --version
-     ```
-2. **Poetry**  
-   ```bash
-   pip install poetry
-   poetry self update
+### Initial Setup
 
-    Activate Poetry env
+```bash
+git clone https://github.com/AlexZimpher/ml-ids-analyzer
+cd ml-ids-analyzer
+cp config/.env.example config/.env
+```
 
-poetry env use C:/path/to/python3.9/python.exe
-poetry install
+---
 
-Copy & configure secrets
+## 🔧 Development
 
-    cp config/.env.example config/.env
-    # Edit config/.env: set ENV=dev or prod, fill DB_PASSWORD, API_KEY, etc.
+### Build Dev Image
 
-2. Local Development
-API
-
-poetry run uvicorn ml_ids_analyzer.api.app:app --reload --port 8000
-# Browse:
-curl http://localhost:8000/
-curl http://localhost:8000/health
-
-CLI
-
-mlids-preprocess     # cleans & featurizes data
-mlids-train          # trains model & saves artifacts
-mlids-predict        # batch inference script
-
-3. Docker Workflows
-Dockerfile.dev
-
-    Build (skips packaging, mounts source & config):
-
+```bash
 docker build -f docker/Dockerfile.dev -t ml-ids-dev .
+```
 
-Run:
+### Run Dev Server
 
-    docker run --rm -p 8000:8000 \
-      -v "$(pwd)/config/.env:/app/config/.env" \
-      ml-ids-dev
+```bash
+docker run --rm -p 8000:8000 -v "${PWD}/config/.env:/app/config/.env" ml-ids-dev
+```
 
-Dockerfile.prod
+### Poetry Shell (if needed)
 
-    Build (multistage, bakes venv):
+```bash
+poetry shell
+```
 
-docker build -f docker/Dockerfile.prod -t ml-ids-analyzer:latest .
+---
 
-Run:
+## 🚀 Production
 
-    docker run --rm -p 8000:8000 \
-      -v "$(pwd)/config/.env:/app/config/.env" \
-      ml-ids-analyzer:latest
+### Build Prod Image
 
-Troubleshooting
+```bash
+docker build -f docker/Dockerfile.prod -t ml-ids-prod .
+```
 
-    CRLF vs LF in entrypoint.sh:
+### Run Prod Server
 
-    sed -i 's/\r$//' config/entrypoint.sh
-    chmod +x config/entrypoint.sh
+```bash
+docker run --rm -p 8000:8000 -v "${PWD}/config/.env:/app/config/.env" ml-ids-prod
+```
 
-    Ensure config/ is copied after src so base.yaml & friends live at /app/config.
+---
 
-4. Testing & QA
+## 🧪 Testing
 
-poetry run pytest --maxfail=1 --disable-warnings -q
+```bash
+pytest
+```
 
-CI/CD can mirror this (pytest + docker build).
-5. Git & GitHub
+---
 
-git add .
-git commit -m "feat: final Docker + config setup"
-git push origin main
+## 🔄 Updating Dependencies
 
-    PR reviews: focus on Docker caching & test coverage.
+```bash
+poetry add <package>
+poetry lock
+```
 
-    Remove DEV_GUIDE.md before public release.
+---
 
-6. Pending Work
+## 🧠 Notes / TODO
 
-    Streaming ingestion for live Suricata feeds
+- Implement proper validation + schema enforcement in FastAPI
+- Add logging middleware to API
+- Improve model packaging (e.g. model registry or versioning)
+- Add basic auth or API key support
+- Create full end-to-end test harness
+- Optional: Integrate with frontend dashboard or SIEM
 
-    Dashboard for threshold tuning (React + Tailwind)
-
-    Auto-retrain on data drift + model versioning
-
-    Monitoring (e.g. Prometheus + Grafana)
-
-    CI with GitHub Actions: lint, format, test, build images
+This file is for internal use and **must be deleted before public release**.
