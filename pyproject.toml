@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "ml-ids-analyzer"
 version = "0.1.0"
-description = "A machine learning pipeline and API for analyzing IDSauthors = ["Alexander Gregory Zimpher <alexanderzimpher@gmail.com>, Spencer Hendren <spencer.hendren@gmail.com>"] alerts using CICIDS2017."
+description = "A machine learning pipeline and API for analyzing IDS alerts using CICIDS2017."
 authors = [
   "Alexander Gregory Zimpher <alexanderzimpher@gmail.com>",
   "Spencer Hendren <spencer.hendren@gmail.com>"
