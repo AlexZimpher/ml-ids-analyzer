@@ -107,6 +107,11 @@ Returns:
   ]
 }
 ```
+### 4. Extract Features from Suricata Alerts
+
+You can convert raw Suricata JSON logs into model-ready feature vectors:
+```bash
+mlids-suricata-features -i data/suricata -o data/suricata_features.csv
 
 ---
 
