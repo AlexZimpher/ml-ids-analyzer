@@ -1,5 +1,10 @@
 # ML-IDS-Analyzer
 
+![Build](https://github.com/AlexZimpher/ml-ids-analyzer/actions/workflows/test.yml/badge.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Python](https://img.shields.io/badge/python-3.9--3.10-blue.svg)
+![Built with Poetry](https://img.shields.io/badge/Built%20with-Poetry-612C63.svg?logo=python&logoColor=white)
+
 **ML-IDS-Analyzer** is a modular machine learning pipeline for analyzing intrusion detection system (IDS) alerts. It uses the CICIDS2017 dataset to build a binary classifier that predicts whether a network connection is an attack or benign traffic. The project includes preprocessing tools, model training and tuning, a prediction CLI, and a REST API using FastAPI.
 
 ---
