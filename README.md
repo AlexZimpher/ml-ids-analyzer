@@ -1,6 +1,6 @@
 # ML-IDS-Analyzer
 
-![Build](https://github.com/AlexZimpher/ml-ids-analyzer/actions/workflows/test.yml/badge.svg)
+![Build](https://github.com/AlexZimpher/ml-ids-analyzer/actions/workflows/ci.yml/badge.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Python](https://img.shields.io/badge/python-3.9--3.10-blue.svg)
 ![Built with Poetry](https://img.shields.io/badge/Built%20with-Poetry-612C63.svg?logo=python&logoColor=white)
