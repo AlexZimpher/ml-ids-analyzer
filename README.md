@@ -1,51 +1,179 @@
 # ML-IDS-Analyzer
 
-ML-IDS-Analyzer is a machine learning pipeline for classifying IDS (Intrusion Detection System) alerts—specifically those from Suricata—as either valid or invalid. It is designed to assist small-scale SOC environments in reducing alert fatigue and improving response prioritization.
+**ML-IDS-Analyzer** is a modular machine learning pipeline for analyzing intrusion detection system (IDS) alerts. It uses the CICIDS2017 dataset to build a binary classifier that predicts whether a network connection is an attack or benign traffic. The project includes preprocessing tools, model training and tuning, a prediction CLI, and a REST API using FastAPI.
+
+---
 
 ## Features
 
-- End-to-end ML pipeline: preprocessing, training, prediction
-- Supports Suricata alert JSONs
-- FastAPI-based REST API
-- Configurable YAML-based settings
-- Dockerized development and production environments
-- SHAP model explainability
+* Preprocess and clean CICIDS2017 data
+* Train a Random Forest model with threshold tuning for F1-score
+* Predict attacks on new data via CLI or API
+* Visualize model performance with confusion matrix, precision-recall curve, and SHAP feature importance
+* Dockerized setup and configurable environment
 
-## Setup (Dev)
+---
 
-```bash
-# Build
-docker build -f docker/Dockerfile.dev -t ml-ids-dev .
+## Installation
 
-# Run with mounted .env
-docker run --rm -p 8000:8000 -v "${PWD}/config/.env:/app/config/.env" ml-ids-dev
-```
-
-## Setup (Prod)
+### Option 1: Local (Poetry)
 
 ```bash
-# Build
-docker build -f docker/Dockerfile.prod -t ml-ids-prod .
-
-# Run
-docker run --rm -p 8000:8000 -v "${PWD}/config/.env:/app/config/.env" ml-ids-prod
+git clone https://github.com/AlexZimpher/ml-ids-analyzer.git
+cd ml-ids-analyzer
+poetry install
 ```
+
+Ensure `data/cicids2017` exists and contains the raw CSVs. Update the config paths as needed.
+
+### Option 2: Docker (Recommended)
+
+```bash
+docker build -t ml-ids-analyzer .
+docker run -it --rm -p 8000:8000 ml-ids-analyzer
+```
+
+---
+
+## Usage
+
+### 1. Preprocess Data
+
+```bash
+mlids-preprocess
+```
+
+This merges and cleans the raw CICIDS2017 CSVs. Output is `data/cicids2017_clean.csv`.
+
+### 2. Train Model
+
+```bash
+mlids-train
+```
+
+Trains a Random Forest classifier, tunes the threshold, and saves the model/scaler.
+Outputs include:
+
+* `outputs/model.joblib`
+* `outputs/scaler.joblib`
+* Evaluation metrics
+* Confusion matrix and PR curve
+* SHAP summary plot
+
+### 3. Predict New Data
+
+```bash
+mlids-predict --input-file path/to/file.csv --output-file path/to/results.csv
+```
+
+Adds `prob_attack` and `pred_attack` columns to the output file.
+
+---
 
 ## API
 
-- `GET /health` – API health check
-- `GET /` – Welcome message
-- `POST /predict` – Submit alert JSONs for classification
-
-## CLI Scripts
+### Start the API
 
 ```bash
-# Preprocess Suricata alert data
-poetry run mlids-preprocess
-
-# Train model
-poetry run mlids-train
-
-# Predict from file
-poetry run mlids-predict
+uvicorn ml_ids_analyzer.api.app:app --reload
 ```
+
+### Endpoints
+
+* `GET /health` – health check
+* `POST /predict` – submit JSON data with a list of feature dicts:
+
+```json
+{
+  "data": [
+    {"feature1": 0.1, "feature2": 3.5, ...},
+    {"feature1": 0.2, "feature2": 4.0, ...}
+  ]
+}
+```
+
+Returns:
+
+```json
+{
+  "results": [
+    {"prob_attack": 0.91, "pred_attack": 1},
+    {"prob_attack": 0.04, "pred_attack": 0}
+  ]
+}
+```
+
+---
+
+## Project Structure
+
+```
+ml-ids-analyzer/
+├── src/
+│   └── ml_ids_analyzer/
+│       ├── preprocessing/
+│       ├── modeling/
+│       ├── inference/
+│       ├── api/
+│       └── config/
+├── tests/
+├── data/
+├── outputs/
+└── docker/
+```
+
+---
+
+## Visualizations
+
+**Confusion Matrix**  
+![Confusion Matrix](outputs/confusion_matrix.png)
+
+**Precision-Recall Curve**  
+![Precision-Recall Curve](outputs/pr_curve.png)
+
+**SHAP Summary Plot**  
+![SHAP Summary](outputs/shap_summary.png)
+
+---
+
+## Configuration
+
+YAML config files define paths and hyperparameters:
+
+* `config/base.yaml`
+* `config/dev.yaml`
+
+Set the `ENV` variable to control which config is loaded:
+
+```bash
+ENV=dev mlids-train
+```
+
+---
+
+## License
+
+MIT License
+
+---
+
+## Authors
+
+Alexander Zimpher
+Spencer Hendren
+
+---
+
+## Future Improvements
+
+* Add authentication and input validation to API
+* Deploy API/Streamlit app for live demo
+* Improve UI and interactivity
+* Write full Colab demo notebook
+
+---
+
+## Dataset
+
+[CICIDS2017 - Canadian Institute for Cybersecurity](https://www.unb.ca/cic/datasets/ids-2017.html)
