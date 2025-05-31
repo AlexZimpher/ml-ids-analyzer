@@ -11,6 +11,11 @@ Includes:
 import logging
 from pathlib import Path
 
+import numpy as np                                            # ← Add this line
+# Workaround for numpy’s removal of `np.bool` (so SHAP doesn’t break):
+if not hasattr(np, "bool"):
+    np.bool = bool                                           # ← Add these two lines
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import (

@@ -70,15 +70,15 @@ def search_hyperparameters(
 
 
 def train_model(no_search: bool = False) -> None:
-    """
-    Load data, train model (with optional hyperparameter search),
-    tune probability threshold, evaluate, and save artifacts.
-    """
     # --- Load & Clean Data ---
     df = pd.read_csv(DATA_FILE, skipinitialspace=True)
     df.columns = df.columns.str.strip()
-    df.replace([np.inf, -np.inf], pd.NA, inplace=True)
     df.dropna(subset=FEATURES + [LABEL], inplace=True)
+
+    # --- Replace infinite values only in numeric columns ---
+    numeric_cols = df.select_dtypes(include=["number"]).columns
+    df[numeric_cols] = df[numeric_cols].replace([np.inf, -np.inf], np.nan)
+    df.dropna(subset=FEATURES + [LABEL], inplace=True)  # drop rows where inf → NaN occurred
 
     X = df[FEATURES]
     y = df[LABEL]

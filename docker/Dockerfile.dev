@@ -1,28 +1,24 @@
-# docker/Dockerfile.dev
-FROM python:3.9-slim-bullseye
+ FROM python:3.9-slim-bullseye
+ WORKDIR /app
 
-WORKDIR /app
+ # 1) Copy pyproject.toml & poetry.lock so that Poetry can install dependencies & your package
+ COPY pyproject.toml poetry.lock README.md /app/
 
-# 1) Install Poetry & your dev-deps (skip packaging your library)
-COPY pyproject.toml poetry.lock README.md ./
-RUN pip install poetry \
-  && poetry config virtualenvs.create false \
-  && poetry install --no-interaction --no-ansi --no-root
+ # 2) Copy source code and config so that Poetry can find your package and config files
+ COPY src /app/src
+ COPY config /app/config
 
-# 2) Copy your library source
-COPY src /app/src
+ # 3) Install Poetry, install dependencies (including your package, since pyproject.toml is in /app)
+ RUN pip install --upgrade pip \
+     && pip install poetry \
+     && poetry config virtualenvs.create false \
+     && poetry install --no-interaction --no-ansi
 
-# 3) Make Python import from /app/src
-ENV PYTHONPATH=/app/src
+ # 4) Install the local package (using the pyproject.toml in /app)
+ RUN pip install -e /app
 
-# 4) Copy your config folder (YAMLs + entrypoint + .env.example, etc)
-COPY config /app/config
+ # 5) Make entrypoint script executable
+ RUN chmod +x /app/config/entrypoint.sh
 
-# 5) Normalize line endings & mark entrypoint executable
-RUN sed -i 's/\r$//' /app/config/entrypoint.sh \
-  && chmod +x /app/config/entrypoint.sh
-
-# 6) Expose port & launch in dev mode
-EXPOSE 8000
-ENTRYPOINT ["./config/entrypoint.sh"]
-CMD ["uvicorn", "ml_ids_analyzer.api.app:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+ ENTRYPOINT ["/app/config/entrypoint.sh"]
+ CMD ["uvicorn", "ml_ids_analyzer.api.app:app", "--host", "0.0.0.0", "--port", "8000"]

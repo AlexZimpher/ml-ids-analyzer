@@ -16,6 +16,7 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 
+# Tell Poetry where your code lives, so it will install ml_ids_analyzer as a package.
 [[tool.poetry.packages]]
 include = "ml_ids_analyzer"
 from = "src"
@@ -28,7 +29,7 @@ scikit-learn = "^1.6"
 xgboost      = "^1.7"
 joblib       = "^1.5"
 PyYAML       = "^6.0"
-click        = "^8.1"
+click        = "^8.1"       # If you use click for any CLI
 fastapi      = "^0.85"
 uvicorn      = { extras = ["standard"], version = "^0.18" }
 pydantic     = "^1.10"
@@ -44,8 +45,10 @@ shap          = "^0.41"
 python-dotenv = "^1.1"
 
 [tool.poetry.scripts]
+# Adjust these paths so that they point to the modules where you define main()
+mlids-suricata-features = "ml_ids_analyzer.preprocessing.suricata_to_features:main"
 mlids-preprocess = "ml_ids_analyzer.preprocessing.preprocess:main"
-mlids-train      = "ml_ids_analyzer.model:main"
+mlids-train      = "ml_ids_analyzer.modeling.train:main"
 mlids-predict    = "ml_ids_analyzer.inference.predict:main"
 
 [tool.black]
