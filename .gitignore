@@ -1,76 +1,26 @@
-# ================================
-# Byte-compiled / optimized / DLL files
-# ================================
-__pycache__/
-*.py[cod]
-*$py.class
+# Ignore generated feature CSVs and backups
+/data/suricata_features.csv
+/data/cicids2017_clean_backup.csv
+/data/new_data.csv
 
-# ================================
-# Mypy cache
-# ================================
-.mypy_cache/
+# Ignore raw data folder
+/data/cicids2017_raw/
 
-# ================================
-# Test cache & coverage
-# ================================
-.pytest_cache/
-.ruff_cache/
-.coverage
-htmlcov/
+# Ignore outputs from model training/evaluation
+/outputs/
 
-# ================================
-# Distribution / packaging
-# ================================
-dist/
-build/
-*.egg-info/
-ml_ids_analyzer.egg-info/
-src/ml_ids_analyzer.egg-info/
+# Ignore one-off test JSONs
+/alert1.json
+/suricata_test/
 
-# ================================
-# Virtual environments & local env
-# ================================
-.venv/
-env/
-venv/
-.env
-config/.env
-docker/.env
+# Ignore any leftover Docker src folder
+/docker/src/
 
-# ================================
-# Jupyter Notebook checkpoints
-# ================================
-.ipynb_checkpoints/
-notebooks/
+# Ignore repo-tree dump
+repo-tree.txt
 
-# ================================
-# Logs and outputs
-# ================================
-*.log
-diagnostics/
-outputs/
+# If you do not want to commit model + scaler:
+/artifacts/
 
-# ================================
-# Data files
-# ================================
-data/raw/
-data/processed/
-!data/cicids2017_clean.csv
-
-# ================================
-# Docker build context exclusions
-# ================================
-__dockerignore__
-docker-compose.override.yml
-
-# ================================
-# IDE settings
-# ================================
-.vscode/
-.idea/
-
-# ================================
-# System files
-# ================================
-.DS_Store
-Thumbs.db
+# Jupyter notebook checkpoints
+**/.ipynb_checkpoints/
