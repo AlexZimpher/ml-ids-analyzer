@@ -11,5 +11,5 @@ if [ -f /app/config/.env ]; then
   export $(grep -v '^#' /app/config/.env | xargs)
 fi
 
-# exec the CMD from Dockerfile
+# Exec the CMD from Dockerfile
 exec "$@"

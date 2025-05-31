@@ -1,5 +1,5 @@
 data:
-  raw_dir: "data/cicids2017"
+  raw_dir: "data/cicids2017_raw"
   clean_file: "data/cicids2017_clean.csv"
   new_input_file: "data/new_data.csv"
 

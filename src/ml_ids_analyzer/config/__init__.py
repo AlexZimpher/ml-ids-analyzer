@@ -11,15 +11,9 @@ import yaml
 #    src/                                   <-- 3  <-- ROOT
 ROOT = Path(__file__).parents[3]
 
-# which environment? default to "dev"
-env = os.getenv("ENV", "dev")
+# load only default.yaml (no environment‐specific overrides)
+default_path = ROOT / "config" / "default.yaml"
+base = yaml.safe_load(default_path.read_text(encoding="utf-8"))
 
-# load the base + override YAMLs
-base_path     = ROOT / "config" / "base.yaml"
-override_path = ROOT / "config" / f"{env}.yaml"
-
-base     = yaml.safe_load(base_path.read_text(encoding="utf-8"))
-override = yaml.safe_load(override_path.read_text(encoding="utf-8"))
-
-# merge: base ← override ← os.environ
-cfg = {**base, **override, **os.environ}
+# merge default settings with any environment variables
+cfg = {**base, **os.environ}

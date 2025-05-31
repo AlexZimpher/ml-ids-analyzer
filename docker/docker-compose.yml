@@ -1,15 +1,17 @@
-version: '3.8'
+# docker/docker-compose.yml
+
 services:
   mlids:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..      # Project root (one level above this docker folder)
+      dockerfile: docker/Dockerfile.dev
     volumes:
-      - .:/app:ro
+      - ..:/app
     ports:
       - "8000:8000"
     environment:
       - LOG_LEVEL=info
+      - API_KEY=${example_key} # Make sure you have an .env file (in the project root) with API_KEY defined
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
       interval: 30s
