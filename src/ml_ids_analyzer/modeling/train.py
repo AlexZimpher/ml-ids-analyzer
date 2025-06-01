@@ -8,7 +8,7 @@ threshold tuning, evaluation, and saves model + scaler + predictions.
 
 import os
 import logging
-import argparse
+import click
 
 import pandas as pd
 import numpy as np
@@ -46,10 +46,7 @@ def _get_base_rf_params() -> dict:
 def search_hyperparameters(
     X_train: np.ndarray, y_train: pd.Series
 ) -> RandomForestClassifier:
-    """
-    Perform RandomizedSearchCV using the 'search_params' in RF_CONFIG.
-    Returns the best estimator.
-    """
+    """Perform RandomizedSearchCV using 'search_params' in RF_CONFIG."""
     base_params = _get_base_rf_params()
     rf = RandomForestClassifier(**base_params)
     param_dist = RF_CONFIG.get("search_params", {})
@@ -70,64 +67,50 @@ def search_hyperparameters(
 
 
 def train_model(no_search: bool = False) -> None:
-    # --- Load & Clean Data ---
+    """Main training pipeline."""
     df = pd.read_csv(DATA_FILE, skipinitialspace=True)
     df.columns = df.columns.str.strip()
     df.dropna(subset=FEATURES + [LABEL], inplace=True)
 
-    # --- Replace infinite values only in numeric columns ---
     numeric_cols = df.select_dtypes(include=["number"]).columns
     df[numeric_cols] = df[numeric_cols].replace([np.inf, -np.inf], np.nan)
-    df.dropna(subset=FEATURES + [LABEL], inplace=True)  # drop rows where inf → NaN occurred
+    df.dropna(subset=FEATURES + [LABEL], inplace=True)
 
     X = df[FEATURES]
     y = df[LABEL]
 
-    # --- Train/Test Split ---
     X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=0.3,
-        stratify=y,
-        random_state=RF_CONFIG.get("random_state", None),
+        X, y, test_size=0.3, stratify=y,
+        random_state=RF_CONFIG.get("random_state", None)
     )
 
-    # --- Feature Scaling ---
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    # --- Model Training ---
     if not no_search and "search_params" in RF_CONFIG:
         model = search_hyperparameters(X_train_scaled, y_train)
     else:
-        base_params = _get_base_rf_params()
-        model = RandomForestClassifier(**base_params)
+        model = RandomForestClassifier(**_get_base_rf_params())
         model.fit(X_train_scaled, y_train)
 
-    # --- Threshold Tuning ---
     X_val, X_final, y_val, y_final = train_test_split(
-        X_test_scaled,
-        y_test,
-        test_size=0.5,
-        stratify=y_test,
-        random_state=RF_CONFIG.get("random_state", None),
+        X_test_scaled, y_test,
+        test_size=0.5, stratify=y_test,
+        random_state=RF_CONFIG.get("random_state", None)
     )
+
     best_thr = tune_threshold(model, X_val, y_val)
     logging.info("Using probability threshold: %.3f", best_thr)
 
     probs_final = model.predict_proba(X_final)[:, 1]
     y_pred_final = (probs_final >= best_thr).astype(int)
 
-    # --- Evaluation & Explainability ---
     evaluate_model(y_final, y_pred_final, model_name="Random Forest (tuned)")
     explain_model(model, X_train_scaled)
 
-    # --- Save Outputs ---
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    pd.DataFrame({"Actual": y_final, "Predicted": y_pred_final}).to_csv(
-        PRED_CSV, index=False
-    )
+    pd.DataFrame({"Actual": y_final, "Predicted": y_pred_final}).to_csv(PRED_CSV, index=False)
     joblib.dump(model, MODEL_FILE)
     joblib.dump(scaler, SCALER_FILE)
 
@@ -136,18 +119,15 @@ def train_model(no_search: bool = False) -> None:
     logging.info("Saved scaler        → %s", SCALER_FILE)
 
 
-def main() -> None:
-    """Console-script entry point."""
-    parser = argparse.ArgumentParser(
-        description="Train the ML-IDS-Analyzer model with optional hyperparameter search."
-    )
-    parser.add_argument(
-        "--no-search",
-        action="store_true",
-        help="Skip hyperparameter tuning and train with default RF_CONFIG",
-    )
-    args = parser.parse_args()
-    train_model(no_search=args.no_search)
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option(
+    "--no-search",
+    is_flag=True,
+    help="Skip hyperparameter tuning and train with default RF_CONFIG."
+)
+def main(no_search: bool) -> None:
+    """Train the ML-IDS-Analyzer model."""
+    train_model(no_search=no_search)
 
 
 if __name__ == "__main__":

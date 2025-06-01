@@ -21,8 +21,8 @@ infer_cfg = cfg.get("inference", {})
 DEFAULT_INPUT: str = infer_cfg.get(
     "input_csv", cfg.get("data", {}).get("clean_file", "data/cicids2017_clean.csv")
 )
-DEFAULT_MODEL: str = model_cfg.get("model_file", "outputs/model.joblib")
-DEFAULT_SCALER: Optional[str] = model_cfg.get("scaler_file", None)
+DEFAULT_MODEL: str = cfg.get("paths", {}).get("model_file", "outputs/random_forest_model.joblib")
+DEFAULT_SCALER: Optional[str] = cfg.get("paths", {}).get("scaler_file", "outputs/scaler.joblib")
 DEFAULT_OUTPUT: str = infer_cfg.get("output_csv", "outputs/predictions.csv")
 THRESHOLD: float = infer_cfg.get("threshold", 0.5)
 
