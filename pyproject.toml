@@ -41,6 +41,7 @@ anyio         = "^4.3.0"
 shap          = "^0.44.1"
 matplotlib    = "^3.8.4"
 seaborn       = "^0.13.2"
+streamlit     = "^1.45.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest        = "^8.2.1"
@@ -51,6 +52,7 @@ mlids-preprocess = "ml_ids_analyzer.preprocessing.preprocess:main"
 mlids-suricata-features = "ml_ids_analyzer.preprocessing.suricata_to_features:main"
 mlids-train = "ml_ids_analyzer.modeling.train:main"
 mlids-predict = "ml_ids_analyzer.inference.predict:main"
+mlids-analyzer = "ml_ids_analyzer.cli:cli"
 
 [tool.black]
 line-length = 88

@@ -2,19 +2,21 @@
 
 import os
 import logging
-from typing import Optional
+from typing import Optional, Tuple
 
 import click
 import pandas as pd
+import numpy as np
 import joblib
+from pathlib import Path
 
 from ml_ids_analyzer.config import cfg
 
-# module‐level logger
+# Logger
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 _logger = logging.getLogger(__name__)
 
-# Safely pull config with defaults
+# Config fallback values
 model_cfg = cfg.get("model", {})
 infer_cfg = cfg.get("inference", {})
 
@@ -25,6 +27,31 @@ DEFAULT_MODEL: str = cfg.get("paths", {}).get("model_file", "outputs/random_fore
 DEFAULT_SCALER: Optional[str] = cfg.get("paths", {}).get("scaler_file", "outputs/scaler.joblib")
 DEFAULT_OUTPUT: str = infer_cfg.get("output_csv", "outputs/predictions.csv")
 THRESHOLD: float = infer_cfg.get("threshold", 0.5)
+
+
+def load_model_and_scaler() -> Tuple:
+    """Load model and scaler from configured paths."""
+    model = joblib.load(DEFAULT_MODEL)
+    scaler = joblib.load(DEFAULT_SCALER) if DEFAULT_SCALER and os.path.isfile(DEFAULT_SCALER) else None
+    return model, scaler
+
+
+def predict_alerts(model, scaler, df: pd.DataFrame, threshold: float = THRESHOLD) -> pd.DataFrame:
+    """
+    Run predictions on a DataFrame using provided model and scaler.
+    Adds 'predicted_label' and 'prediction_prob' columns to the result.
+    """
+    features = cfg["features"]
+    X = df[features].copy()
+    X_scaled = scaler.transform(X) if scaler is not None else X
+
+    probs = model.predict_proba(X_scaled)[:, 1]
+    preds = (probs >= threshold).astype(int)
+
+    result = df.copy()
+    result["prediction_prob"] = probs
+    result["predicted_label"] = preds
+    return result
 
 
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
@@ -65,15 +92,9 @@ def main(
     output_file: str,
     threshold: float,
 ) -> None:
-    """
-    Load model (and optional scaler), read INPUT_FILE, run predictions,
-    and write results to OUTPUT_FILE.
-    """
-    # 1. Validate files
-    for path, desc in [
-        (input_file, "input CSV"),
-        (model_file, "model file"),
-    ]:
+    """CLI: Load model and input file, run predictions, save results."""
+    # Validate input files
+    for path, desc in [(input_file, "input CSV"), (model_file, "model file")]:
         if not os.path.isfile(path):
             _logger.error("Missing %s: %s", desc, path)
             raise SystemExit(1)
@@ -81,30 +102,26 @@ def main(
         _logger.error("Missing scaler file: %s", scaler_file)
         raise SystemExit(1)
 
-    # 2. Load artifacts
+    # Load model and scaler
     _logger.info("Loading model from %s", model_file)
     model = joblib.load(model_file)
-    scaler = None
-    if scaler_file:
-        _logger.info("Loading scaler from %s", scaler_file)
-        scaler = joblib.load(scaler_file)
+    scaler = joblib.load(scaler_file) if scaler_file else None
 
-    # 3. Read input
+    # Load input data
     _logger.info("Reading input data from %s", input_file)
     df = pd.read_csv(input_file)
     features = df.drop(columns=[cfg.get("label_column", "Label")], errors="ignore")
 
-    # 4. Apply scaler
     X = features.values
     if scaler is not None:
         X = scaler.transform(X)
 
-    # 5. Predict probabilities and labels
+    # Predict
     _logger.info("Running predictions")
     probs = model.predict_proba(X)[:, 1]
     preds = (probs >= threshold).astype(int)
 
-    # 6. Assemble and write output
+    # Save results
     out = features.copy()
     out["prob_attack"] = probs
     out["pred_attack"] = preds
