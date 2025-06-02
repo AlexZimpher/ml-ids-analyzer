@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """
-Training entry-point for ML-IDS-Analyzer.
+Training entry point for ML-IDS-Analyzer.
 
-Loads cleaned CICIDS2017 data, optionally performs hyperparameter search,
-threshold tuning, evaluation, and saves model + scaler + predictions.
+This script loads cleaned CICIDS2017 data, trains a Random Forest model
+(with optional hyperparameter tuning), tunes the decision threshold,
+evaluates performance, generates SHAP plots, and saves model artifacts.
 """
 
 import os
 import logging
 import click
+from pathlib import Path
 
 import pandas as pd
 import numpy as np
@@ -17,17 +19,24 @@ from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 
-from ml_ids_analyzer.config import cfg
-from ml_ids_analyzer.modeling.evaluate import (
-    evaluate_model,
-    explain_model,
-    tune_threshold,
-)
+from ml_ids_analyzer.config import cfg as base_cfg
+from ml_ids_analyzer.modeling.evaluate import evaluate_model, tune_threshold
+from ml_ids_analyzer.explainability.explain import explain_model
 
-# --- Logging Configuration ---
+# --- Logging ---
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
-# --- Constants from config ---
+# --- Dynamic Config Override ---
+cfg = base_cfg.copy()
+output_override = os.getenv("MLIDS_OUTPUT_DIR")
+if output_override:
+    output_path = Path(output_override)
+    cfg["paths"]["output_dir"] = output_path
+    cfg["paths"]["predictions"] = output_path / "predictions.csv"
+    cfg["paths"]["model_file"] = output_path / "random_forest_model.joblib"
+    cfg["paths"]["scaler_file"] = output_path / "scaler.joblib"
+
+# --- Config Constants ---
 DATA_FILE = cfg["data"]["clean_file"]
 OUTPUT_DIR = cfg["paths"]["output_dir"]
 PRED_CSV = cfg["paths"]["predictions"]
@@ -43,12 +52,9 @@ def _get_base_rf_params() -> dict:
     return {k: v for k, v in RF_CONFIG.items() if k != "search_params"}
 
 
-def search_hyperparameters(
-    X_train: np.ndarray, y_train: pd.Series
-) -> RandomForestClassifier:
-    """Perform RandomizedSearchCV using 'search_params' in RF_CONFIG."""
-    base_params = _get_base_rf_params()
-    rf = RandomForestClassifier(**base_params)
+def search_hyperparameters(X_train: np.ndarray, y_train: pd.Series) -> RandomForestClassifier:
+    """Perform RandomizedSearchCV using parameters in RF_CONFIG."""
+    rf = RandomForestClassifier(**_get_base_rf_params())
     param_dist = RF_CONFIG.get("search_params", {})
 
     search = RandomizedSearchCV(
@@ -80,8 +86,7 @@ def train_model(no_search: bool = False) -> None:
     y = df[LABEL]
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.3, stratify=y,
-        random_state=RF_CONFIG.get("random_state", None)
+        X, y, test_size=0.3, stratify=y, random_state=RF_CONFIG.get("random_state", None)
     )
 
     scaler = StandardScaler()
@@ -95,8 +100,7 @@ def train_model(no_search: bool = False) -> None:
         model.fit(X_train_scaled, y_train)
 
     X_val, X_final, y_val, y_final = train_test_split(
-        X_test_scaled, y_test,
-        test_size=0.5, stratify=y_test,
+        X_test_scaled, y_test, test_size=0.5, stratify=y_test,
         random_state=RF_CONFIG.get("random_state", None)
     )
 
@@ -107,7 +111,11 @@ def train_model(no_search: bool = False) -> None:
     y_pred_final = (probs_final >= best_thr).astype(int)
 
     evaluate_model(y_final, y_pred_final, model_name="Random Forest (tuned)")
-    explain_model(model, X_train_scaled)
+
+    try:
+        explain_model(model, X_train_scaled)
+    except Exception as e:
+        logging.warning("SHAP explainability failed: %s", e)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     pd.DataFrame({"Actual": y_final, "Predicted": y_pred_final}).to_csv(PRED_CSV, index=False)

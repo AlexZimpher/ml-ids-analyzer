@@ -7,7 +7,7 @@ Includes:
 - explain_model: SHAP summary plot of training data.
 - tune_threshold: computes Precision–Recall curve, saves it, and returns best threshold.
 """
-
+from ml_ids_analyzer.config import cfg
 import logging
 from pathlib import Path
 
@@ -34,7 +34,7 @@ OUTPUT_DIR = Path("outputs")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def evaluate_model(y_true, y_pred, model_name="Model") -> None:
+def evaluate_model(y_true, y_pred, model_name: str = "Model", output_dir=None) -> None:
     """Print classification report, ROC AUC, and save confusion matrix."""
     logging.info("=== Evaluation Report: %s ===", model_name)
     print(classification_report(y_true, y_pred))
@@ -49,7 +49,7 @@ def evaluate_model(y_true, y_pred, model_name="Model") -> None:
     plt.tight_layout()
 
     out_path = OUTPUT_DIR / f"{model_name}_confusion_matrix.png"
-    plt.savefig(out_path)
+    plt.savefig(Path(output_dir or cfg["paths"]["output_dir"]) / f"{model_name}_confusion_matrix.png")
     logging.info("Saved confusion matrix to %s", out_path)
     plt.close()
 
