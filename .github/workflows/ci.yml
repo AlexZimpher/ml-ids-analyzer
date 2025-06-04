@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.13]
+        python-version: [3.11]
 
     steps:
       - name: Checkout repository
@@ -26,35 +26,36 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Cache pip
+      - name: Cache Poetry
         uses: actions/cache@v3
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements.txt') }}
+          path: |
+            ~/.cache/pypoetry
+            ~/.cache/pip
+          key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-${{ matrix.python-version }}-
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-poetry-${{ matrix.python-version }}-
+            ${{ runner.os }}-poetry-
+
+      - name: Install Poetry
+        run: python -m pip install --upgrade pip poetry
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          pip install -e .
-          pip install -r requirements.txt
-          pip install pytest flake8 pytest-cov
+        run: poetry install --no-interaction
 
       - name: Run unit tests
-        run: pytest --maxfail=1 --disable-warnings -q --cov=src/ml_ids_analyzer
+        run: poetry run pytest --maxfail=1 --disable-warnings -q --cov=src/ml_ids_analyzer
 
       - name: Upload coverage to Codecov
         if: matrix.python-version == '3.11' && success()
         uses: codecov/codecov-action@v3
 
       - name: Lint with Flake8
-        run: flake8 --config setup.cfg src/ml_ids_analyzer tests
+        run: poetry run flake8 --config setup.cfg src/ml_ids_analyzer tests
 
       - name: Install FastAPI deps
-        run: pip install fastapi uvicorn[standard] pydantic
+        run: poetry run pip install fastapi uvicorn[standard] pydantic
 
       - name: Test API
-        run: pytest tests/test_api.py
+        run: poetry run pytest tests/test_api.py
 
