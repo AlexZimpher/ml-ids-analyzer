@@ -133,9 +133,14 @@ def train_model(no_search: bool = False) -> None:
     is_flag=True,
     help="Skip hyperparameter tuning and train with default RF_CONFIG."
 )
-def main(no_search: bool) -> None:
+def cli(no_search: bool) -> None:
     """Train the ML-IDS-Analyzer model."""
     train_model(no_search=no_search)
+
+
+def main(args: list[str] | None = None) -> None:
+    """CLI entry point used by both scripts and tests."""
+    cli.main(args=args, standalone_mode=False)
 
 
 if __name__ == "__main__":
