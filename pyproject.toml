@@ -42,8 +42,6 @@ shap          = "^0.44.1"
 matplotlib    = "^3.8.4"
 seaborn       = "^0.13.2"
 streamlit     = "^1.45.1"
-
-[tool.poetry.group.dev.dependencies]
 pytest        = "^8.2.1"
 python-dotenv = "^1.0.1"
 
