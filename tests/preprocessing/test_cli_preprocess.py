@@ -82,7 +82,7 @@ def test_train_cli_creates_artifacts(minimal_cleaned_csv, override_output_paths,
     runner = CliRunner()
 
     # Invoke the CLI entry point: train_module.main (which wraps cli)
-    result = runner.invoke(train_module.main, [])
+    result = runner.invoke(train_module.cli, [])
 
     # Assert exit code == 0
     assert result.exit_code == 0, f"Training CLI failed:\n{result.output}"
