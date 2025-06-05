@@ -10,13 +10,11 @@ authors = [
   "Alexander Gregory Zimpher <alexanderzimpher@gmail.com>",
   "Spencer Hendren <spencer.hendren@gmail.com>"
 ]
-license = "MIT"
 readme = "README.md"
 repository = "https://github.com/AlexZimpher/ml-ids-analyzer"
 keywords = ["ml", "ids", "suricata", "security", "alert", "analysis"]
 classifiers = [
   "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
 ]
 
