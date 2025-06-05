@@ -1,126 +1,108 @@
-# File: tests/modeling/test_train_cli.py
+# File: tests/preprocessing/test_cli_preprocess.py
 
-import os
 import pandas as pd
-import numpy as np
 import pytest
-import joblib
 from click.testing import CliRunner
 from pathlib import Path
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import StandardScaler
 
-import ml_ids_analyzer.modeling.train as train_module
-import ml_ids_analyzer.config as config_module
+from ml_ids_analyzer.preprocessing.preprocess import main as preprocess_cli
 
 
-@pytest.fixture
-def minimal_cleaned_csv(tmp_path, monkeypatch):
+def test_preprocess_cli_success(tmp_path):
     """
-    Create a tiny 'cleaned' CSV with exactly the columns expected by train_model:
-    - Three feature columns (we'll name them f1, f2, f3)
-    - The label column (using cfg['label_column'], e.g. 'Label')
-    We then monkeypatch cfg so the training pipeline reads from this file.
+    1) Create two small CSV files under tmp_path/"raw_data".
+    2) Invoke the CLI: mlids-preprocess --data-dir <raw_data> --output-file <out.csv>.
+    3) Read the output CSV and verify that:
+       - The merged rows equal the total from both input files.
+       - The cleaning logic (dropping high-missing, constant columns,
+         dropping rows with missing labels, mapping labels) has been applied.
     """
-    # Determine label column name and feature list from cfg
-    label_col = config_module.cfg["label_column"]
-    features = config_module.cfg["features"]
+    # Arrange: set up a directory with two CSVs
+    raw_dir = tmp_path / "raw_data"
+    raw_dir.mkdir()
 
-    # If 'features' is not set, use a default list of 3 features
-    if not features:
-        features = ["f1", "f2", "f3"]
-        monkeypatch.setitem(config_module.cfg, "features", features)
+    df1 = pd.DataFrame({
+        "A": [1, None, 3],
+        "constant": [5, 5, 5],
+        "Label": ["Benign", "Malware", "Benign"],
+    })
+    df2 = pd.DataFrame({
+        "A": [4, 5],
+        "constant": [5, 5],
+        "Label": ["Malware", None],
+    })
 
-    # Build a small DataFrame: 20 rows, 3 numeric features, balanced binary label
-    n = 20
-    X = np.random.RandomState(0).randn(n, len(features))
-    y = np.array([0] * (n // 2) + [1] * (n // 2))
-    df = pd.DataFrame(X, columns=features)
-    df[label_col] = y
+    (raw_dir / "file1.csv").write_text(df1.to_csv(index=False))
+    (raw_dir / "file2.csv").write_text(df2.to_csv(index=False))
 
-    # Write to a CSV under tmp_path
-    csv_path = tmp_path / "cleaned.csv"
-    df.to_csv(csv_path, index=False)
+    output_file = tmp_path / "cleaned.csv"
 
-    # Monkeypatch DATA_FILE in train_module so it points to our CSV
-    monkeypatch.setitem(train_module.__dict__, "DATA_FILE", str(csv_path))
-
-    return csv_path
-
-
-@pytest.fixture
-def override_output_paths(tmp_path, monkeypatch):
-    """
-    Monkeypatch all cfg['paths'] entries so that training artifacts
-    go under tmp_path.
-    """
-    # Ensure cfg["paths"] exists
-    if "paths" not in config_module.cfg:
-        config_module.cfg["paths"] = {}
-
-    # Set output directory to tmp_path
-    monkeypatch.setitem(config_module.cfg["paths"], "output_dir", str(tmp_path))
-    # Predictions CSV
-    monkeypatch.setitem(config_module.cfg["paths"], "predictions", str(tmp_path / "predictions.csv"))
-    # Model file path
-    monkeypatch.setitem(config_module.cfg["paths"], "model_file", str(tmp_path / "random_forest_model.joblib"))
-    # Scaler file path
-    monkeypatch.setitem(config_module.cfg["paths"], "scaler_file", str(tmp_path / "scaler.joblib"))
-
-    return tmp_path
-
-
-def test_train_cli_creates_artifacts(minimal_cleaned_csv, override_output_paths, monkeypatch):
-    """
-    1) Given a minimal cleaned CSV and overridden output paths under tmp_path,
-       invoke the training CLI with no arguments (so it reads from DATA_FILE).
-    2) Verify that after execution:
-       - predictions.csv exists and has the expected columns.
-       - model_file and scaler_file exist and load correctly.
-       - Confusion‐matrix PNG and SHAP summary PNG exist under tmp_path.
-    """
     runner = CliRunner()
+    result = runner.invoke(
+        preprocess_cli,
+        [
+            "--data-dir", str(raw_dir),
+            "--output-file", str(output_file),
+        ],
+    )
 
-    # Invoke the CLI entry point: train_module.main (which wraps cli)
-    result = runner.invoke(train_module.cli, [])
+    # Assert CLI exited without error
+    assert result.exit_code == 0, f"CLI failed: {result.output}"
 
-    # Assert exit code == 0
-    assert result.exit_code == 0, f"Training CLI failed:\n{result.output}"
+    cleaned = pd.read_csv(output_file)
 
-    # Paths we expect (all under override_output_paths fixture, which is tmp_path)
-    tmp = override_output_paths
+    # After merging 5 rows, drop “constant” (all-5), then drop rows with any missing:
+    #   file1 row1 (A=None) → dropped
+    #   file2 row1 (Label=None) → dropped
+    # Kept rows: (1,Benign), (3,Benign), (4,Malware) → 3 rows
+    assert list(cleaned.columns) == ["A", "Label"]
+    assert cleaned.shape[0] == 3
+    assert list(cleaned["A"]) == [1.0, 3.0, 4.0]
+    assert list(cleaned["Label"]) == [0, 0, 1]
 
-    # 1) Check predictions CSV
-    pred_csv = tmp / "predictions.csv"
-    assert pred_csv.exists() and pred_csv.is_file(), "predictions.csv not created"
-    df_pred = pd.read_csv(pred_csv)
-    # Expect columns ["Actual", "Predicted"]
-    assert set(df_pred.columns) == {"Actual", "Predicted"}
-    # Should have roughly n_test/2 rows; we can't know exact split, but at least 1 row
-    assert len(df_pred) >= 1
 
-    # 2) Check model file
-    model_file = tmp / "random_forest_model.joblib"
-    assert model_file.exists() and model_file.is_file(), "random_forest_model.joblib not created"
-    # Load it and verify it's a RandomForestClassifier instance
-    loaded_model = joblib.load(model_file)
-    assert isinstance(loaded_model, RandomForestClassifier), "Loaded model is not a RandomForestClassifier"
+def test_preprocess_cli_failure_missing_dir(tmp_path):
+    """
+    If the data-dir does not exist, the CLI should exit with a nonzero code,
+    and no output file should be created.
+    """
+    nonexist = tmp_path / "no_such_dir"
+    output_file = tmp_path / "out.csv"
 
-    # 3) Check scaler file
-    scaler_file = tmp / "scaler.joblib"
-    assert scaler_file.exists() and scaler_file.is_file(), "scaler.joblib not created"
-    loaded_scaler = joblib.load(scaler_file)
-    assert isinstance(loaded_scaler, StandardScaler), "Loaded scaler is not a StandardScaler"
+    runner = CliRunner()
+    result = runner.invoke(
+        preprocess_cli,
+        [
+            "--data-dir", str(nonexist),
+            "--output-file", str(output_file),
+        ],
+    )
 
-    # 4) Check confusion‐matrix PNG (name includes "Random Forest (tuned)_confusion_matrix.png")
-    # List any PNG under tmp_path that contains "confusion_matrix"
-    png_files = list(tmp.glob("*confusion_matrix.png"))
-    assert png_files, "Confusion matrix PNG not created"
-    # File should be non-empty
-    for p in png_files:
-        assert p.stat().st_size > 0, f"{p.name} is empty"
+    # Exit code must be nonzero
+    assert result.exit_code != 0
 
-    # 5) Check SHAP summary PNG
-    shap_png = tmp / "shap_summary.png"
-    assert shap_png.exists() and shap_png.is_file(), "shap_summary.png not created"
-    assert shap_png.stat().st_size > 0, "shap_summary.png is empty"
+    # Output file should not exist
+    assert not output_file.exists()
+
+
+def test_preprocess_cli_failure_no_csv(tmp_path):
+    """
+    If data-dir exists but contains no CSVs, the CLI should exit with a nonzero code,
+    and no output file should be created.
+    """
+    empty_dir = tmp_path / "empty_dir"
+    empty_dir.mkdir()
+    (empty_dir / "readme.txt").write_text("not a CSV")
+
+    output_file = tmp_path / "out.csv"
+    runner = CliRunner()
+    result = runner.invoke(
+        preprocess_cli,
+        [
+            "--data-dir", str(empty_dir),
+            "--output-file", str(output_file),
+        ],
+    )
+
+    assert result.exit_code != 0
+    assert not output_file.exists()
