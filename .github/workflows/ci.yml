@@ -61,7 +61,7 @@ jobs:
           files: coverage.xml
 
       - name: Lint with Flake8
-        run: poetry run flake8 --config setup.cfg src/ml_ids_analyzer tests
+        run: poetry run flake8 src/ml_ids_analyzer tests
 
       - name: Test API endpoints
         run: poetry run pytest tests/test_api.py
