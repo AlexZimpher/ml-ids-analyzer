@@ -90,7 +90,7 @@ Generated automatically during training and saved to `/outputs`:
 
 - **Confusion Matrix**
 
-  ![Confusion Matrix](outputs/Random_Forest_tuned_confusion_matrix)
+  ![Confusion Matrix](outputs/Random_Forest_tuned_confusion_matrix.png)
 
 - **Precision-Recall Curve**
 
