@@ -45,11 +45,6 @@ cd ml-ids-analyzer
   poetry run mlids-predict 
 ```
 
-### 🛡️ 4. Extract Features from Suricata Alerts
-```bash
-  poetry run mlids-suricata-features
-```
-
 ---
 
 ## 🌐 Run the API (FastAPI)
