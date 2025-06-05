@@ -90,11 +90,11 @@ Generated automatically during training and saved to `/outputs`:
 
 - **Confusion Matrix**
 
-  ![Confusion Matrix](outputs/confusion_matrix.png)
+  ![Confusion Matrix](outputs/Random Forest (tuned)_confusion_matrix.png)
 
 - **Precision-Recall Curve**
 
-  ![PR Curve](outputs/pr_curve.png)
+  ![PR Curve](outputs/precision_recall_curve.png)
 
 - **SHAP Feature Importance**
 
