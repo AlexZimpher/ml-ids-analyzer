@@ -28,3 +28,9 @@ repo-tree.txt
 # Python bytecode
 **/__pycache__/
 *.pyc
+
+# coverage.py data files
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
