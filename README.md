@@ -81,7 +81,7 @@ Generated automatically during training and saved to `/outputs`:
 
 ```
 ml-ids-analyzer/
-├── config/                  # YAML config files (base/dev/prod)
+├── config/                  # YAML config file
 ├── data/                    # Raw & processed input/output
 ├── docker/                  # Dockerfile and entrypoint
 ├── outputs/                 # Model artifacts, plots, logs
