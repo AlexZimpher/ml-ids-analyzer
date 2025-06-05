@@ -52,11 +52,12 @@ jobs:
             -q \
             --cov=src/ml_ids_analyzer \
             --cov-report=xml
-
+          
       - name: Upload coverage to Codecov
         if: matrix.python-version == '3.11' && success()
         uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
 
       - name: Lint with Flake8
