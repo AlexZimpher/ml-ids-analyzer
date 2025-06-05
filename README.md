@@ -33,6 +33,7 @@ cd ml-ids-analyzer
 ### 🧼 1. Preprocess CICIDS2017
 ```bash
   poetry run mlids-preprocess
+```
 
 ### 🏋️‍♂️ 2. Train the Model
 ```bash
@@ -41,12 +42,12 @@ cd ml-ids-analyzer
 
 ### 📈 3. Predict on New Data
 ```bash
-  poetry run mlids-predict \
+  poetry run mlids-predict 
 ```
 
 ### 🛡️ 4. Extract Features from Suricata Alerts
 ```bash
-  poetry run mlids-suricata-features \
+  poetry run mlids-suricata-features
 ```
 
 ---
@@ -68,7 +69,7 @@ Test it at: [http://localhost:8000/docs](http://localhost:8000/docs)
 Generated automatically during training and saved to `/outputs`:
 
 - **Confusion Matrix**
-
+ 
   ![Confusion Matrix](outputs/Random_Forest_tuned_confusion_matrix.png)
 
 - **Precision-Recall Curve**
@@ -99,7 +100,7 @@ ml-ids-analyzer/
 
 ---
 
-## 🤝 Authors
+## 👥 Authors
 
 - **Alexander Zimpher**
 - **Spencer Hendren**
