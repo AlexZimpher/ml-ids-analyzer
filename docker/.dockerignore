@@ -1,55 +1,43 @@
 # ========================================
-# .dockerignore for ml-ids-analyzer
-# Optimized for Docker-only workflow
+# Dockerignore for ml-ids-analyzer
 # ========================================
 
-# Python cache & build artifacts
+# Bytecode & build artifacts
 __pycache__/
 *.py[cod]
 *.egg-info/
 dist/
 build/
 
-# Virtual environments & Python environment files
+# Virtualenvs & local env
 .venv/
 env/
-.venv.bak/
 .env
 config/.env
 docker/.env
 
-# IDE settings & OS metadata
+# Tests, notebooks & caches
+tests/
+.pytest_cache/
+.ipynb_checkpoints/
+notebooks/
+
+# Outputs & raw data
+outputs/
+data/
+layout.txt
+
+# IDE & metadata
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
 
-# Test-related files and caches
-tests/
-.pytest_cache/
-coverage.*
-nosetests.xml
-*.cover
-*.py,cover
-
-# Jupyter & notebooks
-.ipynb_checkpoints/
-notebooks/
-
-# Outputs and raw data (excluded to keep image clean)
-data/
-outputs/
-*.log
-layout.txt
-
-# Version control & CI/CD
+# Git & CI configs
 .git/
 .github/
 .gitignore
 docker-compose.yml
 
-# Docs (exclude unless needed at runtime)
+# Docs (if not needed at runtime)
 docs/
-
-# Misc
-*.swp
