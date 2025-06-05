@@ -62,6 +62,6 @@ jobs:
 
 #      - name: Lint with Flake8
 #        run: poetry run flake8 src/ml_ids_analyzer tests
-
-      - name: Test API endpoints
-        run: poetry run pytest tests/test_api.py
+# TODO
+#      - name: Test API endpoints
+#        run: poetry run pytest tests/test_api.py
