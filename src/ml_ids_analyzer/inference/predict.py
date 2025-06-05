@@ -110,19 +110,30 @@ def main(
     # Load input data
     _logger.info("Reading input data from %s", input_file)
     df = pd.read_csv(input_file)
-    features = df.drop(columns=[cfg.get("label_column", "Label")], errors="ignore")
 
-    X = features.values
+    # 1) Replace ±∞ with NaN, then drop any rows containing NaN
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+    df.dropna(axis=0, how="any", inplace=True)
+
+    # 2) Subset to exactly the feature columns (in the exact order)
+    feature_cols = cfg["features"]
+    X_df = df[feature_cols].copy()
+
+    # 3) Convert all columns to float64 (raise if conversion fails)
+    X_df = X_df.astype(np.float64, errors="raise")
+
+    # 4) Extract numpy array and scale if applicable
+    X = X_df.values
     if scaler is not None:
         X = scaler.transform(X)
 
-    # Predict
+    # 5) Run predictions
     _logger.info("Running predictions")
     probs = model.predict_proba(X)[:, 1]
     preds = (probs >= threshold).astype(int)
 
-    # Save results
-    out = features.copy()
+    # 6) Save results (feature columns + prob_attack + pred_attack)
+    out = X_df.copy()
     out["prob_attack"] = probs
     out["pred_attack"] = preds
     os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
