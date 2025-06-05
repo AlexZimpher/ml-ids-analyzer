@@ -14,9 +14,9 @@
 - 📦 Modular ML pipeline (preprocessing, training, prediction)
 - 🧠 Random Forest with threshold optimization
 - 📊 SHAP-based explainability and evaluation plots
-- ⚙️ FastAPI prediction server
-- 🐳 Docker-only workflow
-- 🛠️ Command-line tools for batch processing and feature extraction from Suricata alerts
+- ⚙️ FastAPI prediction server -TODO
+- 🐳 Docker-only workflow - TODO
+- 🛠️ Suricata integration - TODO
 
 ---
 
@@ -28,45 +28,25 @@ git clone https://github.com/AlexZimpher/ml-ids-analyzer.git
 cd ml-ids-analyzer
 ```
 
-### 2. Build the Docker Image
-```bash
-docker build -f docker/Dockerfile.dev -t mlids-analyzer .
-```
-
----
-
 ## 🧪 CLI Usage (via Docker)
-
-All functionality is exposed through Dockerized CLI tools. No local Python or Poetry install is required.
-
-> Replace paths as needed based on your local filesystem.
 
 ### 🧼 1. Preprocess CICIDS2017
 ```bash
-docker run -it --rm -v ${PWD}:/app -w /app mlids-analyzer \
   poetry run mlids-preprocess
-```
 
 ### 🏋️‍♂️ 2. Train the Model
 ```bash
-docker run -it --rm -v ${PWD}:/app -w /app mlids-analyzer \
   poetry run mlids-train
 ```
 
 ### 📈 3. Predict on New Data
 ```bash
-docker run -it --rm -v ${PWD}:/app -w /app mlids-analyzer \
   poetry run mlids-predict \
-  --input-file data/sample_input.csv \
-  --output-file data/sample_output.csv
 ```
 
 ### 🛡️ 4. Extract Features from Suricata Alerts
 ```bash
-docker run -it --rm -v ${PWD}:/app -w /app mlids-analyzer \
   poetry run mlids-suricata-features \
-  -i data/suricata \
-  -o data/suricata_features.csv
 ```
 
 ---
@@ -76,7 +56,6 @@ docker run -it --rm -v ${PWD}:/app -w /app mlids-analyzer \
 Launch the prediction API server:
 
 ```bash
-docker run -it --rm -v ${PWD}:/app -w /app -p 8000:8000 mlids-analyzer \
   poetry run uvicorn ml_ids_analyzer.api.app:app --host 0.0.0.0 --port 8000
 ```
 
@@ -110,7 +89,7 @@ ml-ids-analyzer/
 ├── data/                    # Raw & processed input/output
 ├── docker/                  # Dockerfile and entrypoint
 ├── outputs/                 # Model artifacts, plots, logs
-├── src/ml_ids_analyzer/    # Source code package
+├── src/ml_ids_analyzer/     # Source code package
 │   ├── preprocessing/       # Feature extraction & cleaning
 │   ├── modeling/            # Training & threshold tuning
 │   ├── inference/           # Prediction logic
@@ -120,13 +99,7 @@ ml-ids-analyzer/
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
-
 ## 🤝 Authors
 
-- **Alexander Gregory Zimpher**
+- **Alexander Zimpher**
 - **Spencer Hendren**
