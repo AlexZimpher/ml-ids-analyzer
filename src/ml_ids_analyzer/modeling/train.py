@@ -52,7 +52,9 @@ def _get_base_rf_params() -> dict:
     return {k: v for k, v in RF_CONFIG.items() if k != "search_params"}
 
 
-def search_hyperparameters(X_train: np.ndarray, y_train: pd.Series) -> RandomForestClassifier:
+def search_hyperparameters(
+    X_train: np.ndarray, y_train: pd.Series
+) -> RandomForestClassifier:
     """Perform RandomizedSearchCV using parameters in RF_CONFIG."""
     rf = RandomForestClassifier(**_get_base_rf_params())
     param_dist = RF_CONFIG.get("search_params", {})
@@ -86,7 +88,11 @@ def train_model(no_search: bool = False) -> None:
     y = df[LABEL]
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.3, stratify=y, random_state=RF_CONFIG.get("random_state", None)
+        X,
+        y,
+        test_size=0.3,
+        stratify=y,
+        random_state=RF_CONFIG.get("random_state", None),
     )
 
     scaler = StandardScaler()
@@ -100,8 +106,11 @@ def train_model(no_search: bool = False) -> None:
         model.fit(X_train_scaled, y_train)
 
     X_val, X_final, y_val, y_final = train_test_split(
-        X_test_scaled, y_test, test_size=0.5, stratify=y_test,
-        random_state=RF_CONFIG.get("random_state", None)
+        X_test_scaled,
+        y_test,
+        test_size=0.5,
+        stratify=y_test,
+        random_state=RF_CONFIG.get("random_state", None),
     )
 
     best_thr = tune_threshold(model, X_val, y_val)
@@ -118,7 +127,9 @@ def train_model(no_search: bool = False) -> None:
         logging.warning("SHAP explainability failed: %s", e)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    pd.DataFrame({"Actual": y_final, "Predicted": y_pred_final}).to_csv(PRED_CSV, index=False)
+    pd.DataFrame({"Actual": y_final, "Predicted": y_pred_final}).to_csv(
+        PRED_CSV, index=False
+    )
     joblib.dump(model, MODEL_FILE)
     joblib.dump(scaler, SCALER_FILE)
 
@@ -131,7 +142,7 @@ def train_model(no_search: bool = False) -> None:
 @click.option(
     "--no-search",
     is_flag=True,
-    help="Skip hyperparameter tuning and train with default RF_CONFIG."
+    help="Skip hyperparameter tuning and train with default RF_CONFIG.",
 )
 def cli(no_search: bool) -> None:
     """Train the ML-IDS-Analyzer model."""

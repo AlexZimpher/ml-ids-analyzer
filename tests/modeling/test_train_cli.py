@@ -60,21 +60,33 @@ def override_output_paths(tmp_path, monkeypatch):
 
     # Override cfg so that nothing crashes if any code re‐reads cfg again
     monkeypatch.setitem(config_module.cfg["paths"], "output_dir", str(tmp_path))
-    monkeypatch.setitem(config_module.cfg["paths"], "predictions", str(tmp_path / "predictions.csv"))
-    monkeypatch.setitem(config_module.cfg["paths"], "model_file", str(tmp_path / "random_forest_model.joblib"))
-    monkeypatch.setitem(config_module.cfg["paths"], "scaler_file", str(tmp_path / "scaler.joblib"))
+    monkeypatch.setitem(
+        config_module.cfg["paths"], "predictions", str(tmp_path / "predictions.csv")
+    )
+    monkeypatch.setitem(
+        config_module.cfg["paths"],
+        "model_file",
+        str(tmp_path / "random_forest_model.joblib"),
+    )
+    monkeypatch.setitem(
+        config_module.cfg["paths"], "scaler_file", str(tmp_path / "scaler.joblib")
+    )
 
     # Now override the module‐level constants in train_module directly
     # (these were already bound at import time to whatever cfg had originally).
     monkeypatch.setattr(train_module, "OUTPUT_DIR", str(tmp_path))
     monkeypatch.setattr(train_module, "PRED_CSV", str(tmp_path / "predictions.csv"))
-    monkeypatch.setattr(train_module, "MODEL_FILE", str(tmp_path / "random_forest_model.joblib"))
+    monkeypatch.setattr(
+        train_module, "MODEL_FILE", str(tmp_path / "random_forest_model.joblib")
+    )
     monkeypatch.setattr(train_module, "SCALER_FILE", str(tmp_path / "scaler.joblib"))
 
     return tmp_path
 
 
-def test_train_cli_creates_artifacts(minimal_cleaned_csv, override_output_paths, monkeypatch):
+def test_train_cli_creates_artifacts(
+    minimal_cleaned_csv, override_output_paths, monkeypatch
+):
     """
     1) Given a minimal cleaned CSV and overridden output paths under tmp_path,
        invoke the training CLI with no arguments (so it reads from DATA_FILE).
@@ -104,15 +116,21 @@ def test_train_cli_creates_artifacts(minimal_cleaned_csv, override_output_paths,
 
     # 2) Check model file
     model_file = tmp / "random_forest_model.joblib"
-    assert model_file.exists() and model_file.is_file(), "random_forest_model.joblib not created"
+    assert (
+        model_file.exists() and model_file.is_file()
+    ), "random_forest_model.joblib not created"
     loaded_model = joblib.load(model_file)
-    assert isinstance(loaded_model, RandomForestClassifier), "Loaded model is not a RandomForestClassifier"
+    assert isinstance(
+        loaded_model, RandomForestClassifier
+    ), "Loaded model is not a RandomForestClassifier"
 
     # 3) Check scaler file
     scaler_file = tmp / "scaler.joblib"
     assert scaler_file.exists() and scaler_file.is_file(), "scaler.joblib not created"
     loaded_scaler = joblib.load(scaler_file)
-    assert isinstance(loaded_scaler, StandardScaler), "Loaded scaler is not a StandardScaler"
+    assert isinstance(
+        loaded_scaler, StandardScaler
+    ), "Loaded scaler is not a StandardScaler"
 
     # 4) Check confusion‐matrix PNG (any file containing "confusion_matrix.png")
     png_files = list(tmp.glob("*confusion_matrix.png"))

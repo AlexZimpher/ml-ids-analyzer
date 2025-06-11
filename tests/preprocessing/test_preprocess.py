@@ -13,21 +13,25 @@ from ml_ids_analyzer.preprocessing.preprocess import (
 def test_load_and_merge_csvs_success(tmp_path):
     """
     Create two small CSV files in a temporary directory.
-    Ensure load_and_merge_csvs reads both, concatenates them, 
+    Ensure load_and_merge_csvs reads both, concatenates them,
     and returns a DataFrame of the expected shape and content.
     """
     # Arrange: create a temp directory with two CSVs
     dir_path = tmp_path / "raw_data"
     dir_path.mkdir()
 
-    df1 = pd.DataFrame({
-        "A": [1, 2],
-        "B": ["x", "y"],
-    })
-    df2 = pd.DataFrame({
-        "A": [3],
-        "B": ["z"],
-    })
+    df1 = pd.DataFrame(
+        {
+            "A": [1, 2],
+            "B": ["x", "y"],
+        }
+    )
+    df2 = pd.DataFrame(
+        {
+            "A": [3],
+            "B": ["z"],
+        }
+    )
 
     file1 = dir_path / "part1.csv"
     file2 = dir_path / "part2.csv"
@@ -96,7 +100,7 @@ def test_clean_and_label_drops_high_missing_and_constant_columns():
     # Generate exactly (min_non_na - 1) non-null values:
     non_null_count = min_non_na - 1
     # Fill the first 'non_null_count' entries with 1, then the rest with None
-    too_many_missing = [1]*non_null_count + [None]*(n_rows - non_null_count)
+    too_many_missing = [1] * non_null_count + [None] * (n_rows - non_null_count)
 
     data = {
         "too_many_missing": too_many_missing,
@@ -129,7 +133,7 @@ def test_clean_and_label_drops_high_missing_and_constant_columns():
     assert len(cleaned) == n_rows - 1
 
     # 5) Label mapping: uppercase "BENIGN" → 0, anything else → 1
-    #    Original labels (in order, excluding the None at index 3): 
+    #    Original labels (in order, excluding the None at index 3):
     #      ["Benign", "BENIGN", "Malware", "malware"] → uppercased: ["BENIGN", "BENIGN", "MALWARE", "MALWARE"]
     #      Mapped: [0, 0, 1, 1]
     mapped = list(cleaned[LABEL_COL])
@@ -140,10 +144,7 @@ def test_clean_and_label_raises_if_label_missing():
     """
     If the DataFrame does not contain LABEL_COL, clean_and_label should raise KeyError.
     """
-    df_no_label = pd.DataFrame({
-        "A": [1, 2, 3],
-        "B": ["x", "y", "z"]
-    })
+    df_no_label = pd.DataFrame({"A": [1, 2, 3], "B": ["x", "y", "z"]})
     with pytest.raises(KeyError) as excinfo:
         clean_and_label(df_no_label)
 

@@ -38,8 +38,11 @@ def test_search_hyperparameters_with_minimal_config(monkeypatch):
     # Also ensure _get_base_rf_params returns the base parameters correctly
     def fake_get_base_rf_params():
         # Return everything except "search_params"
-        return {"n_estimators": minimal_config["n_estimators"],
-                "random_state": minimal_config["random_state"]}
+        return {
+            "n_estimators": minimal_config["n_estimators"],
+            "random_state": minimal_config["random_state"],
+        }
+
     monkeypatch.setattr(train_module, "_get_base_rf_params", fake_get_base_rf_params)
 
     # Act: call search_hyperparameters
@@ -49,7 +52,9 @@ def test_search_hyperparameters_with_minimal_config(monkeypatch):
     assert isinstance(model, RandomForestClassifier), "Expected RandomForestClassifier"
 
     # The model must be fitted: check for feature_importances_
-    assert hasattr(model, "feature_importances_"), "Model should have feature_importances_"
+    assert hasattr(
+        model, "feature_importances_"
+    ), "Model should have feature_importances_"
     fi = model.feature_importances_
     assert isinstance(fi, np.ndarray), "feature_importances_ should be a numpy array"
     assert fi.shape == (4,), f"Expected 4 feature importances, got {fi.shape}"
@@ -83,8 +88,11 @@ def test_search_hyperparameters_without_search_params(monkeypatch):
 
     # Monkeypatch _get_base_rf_params accordingly
     def fake_get_base_rf_params():
-        return {"n_estimators": no_search_config["n_estimators"],
-                "random_state": no_search_config["random_state"]}
+        return {
+            "n_estimators": no_search_config["n_estimators"],
+            "random_state": no_search_config["random_state"],
+        }
+
     monkeypatch.setattr(train_module, "_get_base_rf_params", fake_get_base_rf_params)
 
     # Act: call search_hyperparameters
@@ -94,7 +102,9 @@ def test_search_hyperparameters_without_search_params(monkeypatch):
     assert isinstance(model, RandomForestClassifier), "Expected RandomForestClassifier"
 
     # The model must be fitted: check for feature_importances_
-    assert hasattr(model, "feature_importances_"), "Model should have feature_importances_"
+    assert hasattr(
+        model, "feature_importances_"
+    ), "Model should have feature_importances_"
     fi = model.feature_importances_
     assert isinstance(fi, np.ndarray), "feature_importances_ should be a numpy array"
     assert fi.shape == (3,), f"Expected 3 feature importances, got {fi.shape}"

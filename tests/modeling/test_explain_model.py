@@ -40,6 +40,7 @@ def test_explain_model_creates_shap_summary(tmp_path, monkeypatch):
 
     # Assert: shap_summary.png is created under tmp_path and is non-zero size
     output_file = tmp_path / "shap_summary.png"
-    assert output_file.exists() and output_file.is_file(), \
-        f"Expected shap_summary.png in {tmp_path}, but not found."
+    assert (
+        output_file.exists() and output_file.is_file()
+    ), f"Expected shap_summary.png in {tmp_path}, but not found."
     assert output_file.stat().st_size > 0, "Saved SHAP summary PNG is empty."

@@ -52,6 +52,11 @@ mlids-train = "ml_ids_analyzer.modeling.train:main"
 mlids-predict = "ml_ids_analyzer.inference.predict:main"
 mlids-analyzer = "ml_ids_analyzer.cli:cli"
 
+[tool.poetry.group.dev.dependencies]
+flake8 = "6.1.0"
+black = "^25.1.0"
+bandit = "^1.8.3"
+
 [tool.black]
 line-length = 88
 

@@ -3,14 +3,14 @@ import os
 
 import joblib
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel, Field
 
 from ml_ids_analyzer.config import cfg
 
 app = FastAPI(
     title="ML-IDS-Analyzer API",
-    description="Predict intrusion alerts via REST endpoints",
+    description="Predict intrusion alerts via REST endpoints and interactive dashboard",
     version=cfg.get("version", "0.1.0"),
 )
 
@@ -26,78 +26,93 @@ def health():
     return {"status": "ok"}
 
 
-class PredictRequest(BaseModel):
-    data: List[Dict[str, Any]] = Field(..., description="List of feature dicts")
-    model_file: Optional[str] = Field(
-        cfg.get("paths", {}).get("model_file", "outputs/model.joblib"),
-        description="Path to trained model (.joblib)",
-    )
-    scaler_file: Optional[str] = Field(
-        cfg.get("paths", {}).get("scaler_file"),
-        description="Path to scaler artifact (.joblib)",
-    )
-    threshold: Optional[float] = Field(
-        cfg.get("inference", {}).get("threshold", 0.5),
-        description="Probability threshold to flag an attack",
-    )
-
-
-class PredictResponse(BaseModel):
-    results: List[Dict[str, Any]]
-
-
-@app.post("/predict", response_model=PredictResponse)
-def predict(request: PredictRequest):
+@app.post("/predict/csv")
+async def predict_csv(
+    file: UploadFile = File(..., description="CSV file with feature columns"),
+    model_file: Optional[str] = Form(
+        cfg.get("paths", {}).get("model_file", "outputs/model.joblib")
+    ),
+    scaler_file: Optional[str] = Form(cfg.get("paths", {}).get("scaler_file")),
+    threshold: Optional[float] = Form(cfg.get("inference", {}).get("threshold", 0.5)),
+):
+    """
+    Upload a CSV file to get predictions. Returns summary statistics and a preview of results.
+    """
     # Validate model file
-    if not os.path.isfile(request.model_file):
-        raise HTTPException(
-            status_code=400, detail=f"Model not found: {request.model_file}"
-        )
+    if not model_file or not os.path.isfile(model_file):
+        raise HTTPException(status_code=400, detail=f"Model not found: {model_file}")
 
-    # Validate scaler file (if provided)
-    if request.scaler_file and not os.path.isfile(request.scaler_file):
-        raise HTTPException(
-            status_code=400, detail=f"Scaler not found: {request.scaler_file}"
-        )
+    if scaler_file and not os.path.isfile(scaler_file):
+        raise HTTPException(status_code=400, detail=f"Scaler not found: {scaler_file}")
 
-    # Load model
+    # Load model and scaler
     try:
-        model = joblib.load(request.model_file)
+        model = joblib.load(model_file)
+        scaler = joblib.load(scaler_file) if scaler_file else None
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to load model: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to load model/scaler: {e}")
 
-    # Load scaler
-    scaler = None
-    if request.scaler_file:
-        try:
-            scaler = joblib.load(request.scaler_file)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to load scaler: {e}")
-
-    # Build DataFrame
+    # Read CSV into DataFrame
     try:
-        df = pd.DataFrame(request.data)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid input data: {e}")
+        contents = await file.read()
+        import io
 
-    X = df.values
+        df = pd.read_csv(io.BytesIO(contents))
+        feature_cols = cfg["features"]
+        missing = set(feature_cols) - set(df.columns)
+        if missing:
+            raise HTTPException(
+                status_code=400, detail=f"Missing required features: {missing}"
+            )
+        # Limit to first 1000 rows for performance (adjust as needed)
+        df = df.head(1000)
+        X_df = df[feature_cols].copy().astype(float)
+        # Clean data: replace inf/-inf with NaN, drop rows with NaN
+        X_df.replace([float("inf"), float("-inf")], float("nan"), inplace=True)
+        X_df.dropna(axis=0, how="any", inplace=True)
+        X_df = X_df.reset_index(drop=True)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid CSV input: {e}")
+
+    X = X_df.values
     if scaler:
         X = scaler.transform(X)
 
-    # Predictions
     try:
         probs = model.predict_proba(X)[:, 1]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
 
-    preds = (probs >= request.threshold).astype(int)
+    preds = (probs >= threshold).astype(int)
 
-    # Assemble results
     results = []
-    for idx, row in df.iterrows():
+    for idx, row in X_df.iterrows():
         rec = row.to_dict()
         rec["prob_attack"] = float(probs[idx])
         rec["pred_attack"] = int(preds[idx])
         results.append(rec)
 
-    return PredictResponse(results=results)
+    # Summary stats
+    total = len(results)
+    attacks = sum(r["pred_attack"] for r in results)
+    preview = results[:10]  # Show first 10 predictions as a preview
+
+    return {
+        "summary": {
+            "total_records": total,
+            "attacks_detected": attacks,
+            "threshold": threshold,
+        },
+        "preview": preview,
+        "results_csv": "Predictions available as CSV via dashboard/download.",
+    }
+
+
+@app.get("/dashboard", include_in_schema=False)
+def dashboard_redirect():
+    """
+    Redirects to the Streamlit dashboard if running, or provides instructions.
+    """
+    return {
+        "message": "To use the dashboard, run: streamlit run src/ml_ids_analyzer/api/dashboard.py"
+    }
