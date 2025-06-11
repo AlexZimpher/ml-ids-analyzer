@@ -11,6 +11,7 @@ import ml_ids_analyzer.config as config_module
 
 class DummyScaler:
     """A scaler that returns the input array unchanged."""
+
     def transform(self, X):
         return X.values if isinstance(X, pd.DataFrame) else X
 
@@ -20,6 +21,7 @@ class DummyModel:
     A “model” whose predict_proba returns a fixed probability for the positive class.
     We’ll store those probabilities in an array matching the number of rows.
     """
+
     def __init__(self, probs):
         # probs: 1D numpy array of length n_samples
         self._probs = np.asarray(probs)
@@ -51,12 +53,14 @@ def test_predict_alerts_all_below_threshold(tmp_path):
     Given probabilities all below 0.5, predict_alerts should assign predicted_label = 0.
     """
     # Arrange: build a DataFrame with two feature columns
-    df = pd.DataFrame({
-        "f1": [0.1, 0.2, 0.3],
-        "f2": [1.0, 1.1, 1.2],
-        # Extra columns should be preserved in the result
-        "extra": ["a", "b", "c"],
-    })
+    df = pd.DataFrame(
+        {
+            "f1": [0.1, 0.2, 0.3],
+            "f2": [1.0, 1.1, 1.2],
+            # Extra columns should be preserved in the result
+            "extra": ["a", "b", "c"],
+        }
+    )
 
     # DummyModel returns probabilities [0.1, 0.2, 0.3] for the positive class
     dummy_probs = [0.1, 0.2, 0.3]
@@ -67,7 +71,13 @@ def test_predict_alerts_all_below_threshold(tmp_path):
     result = predict_alerts(model, scaler, df, threshold=0.5)
 
     # Assert: original columns remain
-    assert list(result.columns) == ["f1", "f2", "extra", "prediction_prob", "predicted_label"]
+    assert list(result.columns) == [
+        "f1",
+        "f2",
+        "extra",
+        "prediction_prob",
+        "predicted_label",
+    ]
 
     # All probabilities < 0.5 → predicted_label should be 0
     assert np.allclose(result["prediction_prob"].values, dummy_probs)
@@ -79,10 +89,12 @@ def test_predict_alerts_mixed_probabilities():
     Given a mix of probabilities above and below threshold, labels should follow.
     """
     # Arrange: 4 rows, features f1 and f2
-    df = pd.DataFrame({
-        "f1": [0, 1, 2, 3],
-        "f2": [3, 2, 1, 0],
-    })
+    df = pd.DataFrame(
+        {
+            "f1": [0, 1, 2, 3],
+            "f2": [3, 2, 1, 0],
+        }
+    )
 
     # Probabilities: [0.0, 0.5, 0.75, 1.0]
     dummy_probs = [0.0, 0.5, 0.75, 1.0]
@@ -106,11 +118,13 @@ def test_predict_alerts_without_scaler():
     If scaler is None, predict_alerts should use X without scaling.
     """
     # Arrange: DataFrame with features and one extra
-    df = pd.DataFrame({
-        "f1": [10.0, 20.0],
-        "f2": [30.0, 40.0],
-        "note": ["x", "y"],
-    })
+    df = pd.DataFrame(
+        {
+            "f1": [10.0, 20.0],
+            "f2": [30.0, 40.0],
+            "note": ["x", "y"],
+        }
+    )
 
     # Probabilities fixed at [0.6, 0.4]
     dummy_probs = [0.6, 0.4]
@@ -121,7 +135,13 @@ def test_predict_alerts_without_scaler():
     result = predict_alerts(model, scaler, df, threshold=0.5)
 
     # Assert: DataFrame shape and columns
-    assert list(result.columns) == ["f1", "f2", "note", "prediction_prob", "predicted_label"]
+    assert list(result.columns) == [
+        "f1",
+        "f2",
+        "note",
+        "prediction_prob",
+        "predicted_label",
+    ]
 
     # Probabilities match, and labels [1, 0]
     assert np.allclose(result["prediction_prob"].values, dummy_probs)
@@ -133,10 +153,12 @@ def test_predict_alerts_preserves_input_order_and_dtype():
     The returned DataFrame should preserve input order and dtypes for existing columns.
     """
     # Arrange: DataFrame with integer features
-    df = pd.DataFrame({
-        "f1": pd.Series([5, 6, 7], dtype=np.int64),
-        "f2": pd.Series([8, 9, 10], dtype=np.int64),
-    })
+    df = pd.DataFrame(
+        {
+            "f1": pd.Series([5, 6, 7], dtype=np.int64),
+            "f2": pd.Series([8, 9, 10], dtype=np.int64),
+        }
+    )
 
     dummy_probs = [0.2, 0.8, 0.2]
     model = DummyModel(dummy_probs)

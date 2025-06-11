@@ -8,6 +8,7 @@ from ml_ids_analyzer.config import cfg
 
 OUTPUT_DIR = Path(cfg["paths"]["output_dir"])  # Ensure Path object
 
+
 def explain_model(model, X_train):
     """Generate SHAP summary plot using a sample of the training set."""
     try:
