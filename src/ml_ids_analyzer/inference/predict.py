@@ -23,8 +23,12 @@ infer_cfg = cfg.get("inference", {})
 DEFAULT_INPUT: str = infer_cfg.get(
     "input_csv", cfg.get("data", {}).get("clean_file", "data/cicids2017_clean.csv")
 )
-DEFAULT_MODEL: str = cfg.get("paths", {}).get("model_file", "outputs/random_forest_model.joblib")
-DEFAULT_SCALER: Optional[str] = cfg.get("paths", {}).get("scaler_file", "outputs/scaler.joblib")
+DEFAULT_MODEL: str = cfg.get("paths", {}).get(
+    "model_file", "outputs/random_forest_model.joblib"
+)
+DEFAULT_SCALER: Optional[str] = cfg.get("paths", {}).get(
+    "scaler_file", "outputs/scaler.joblib"
+)
 DEFAULT_OUTPUT: str = infer_cfg.get("output_csv", "outputs/predictions.csv")
 THRESHOLD: float = infer_cfg.get("threshold", 0.5)
 
@@ -32,17 +36,29 @@ THRESHOLD: float = infer_cfg.get("threshold", 0.5)
 def load_model_and_scaler() -> Tuple:
     """Load model and scaler from configured paths."""
     model = joblib.load(DEFAULT_MODEL)
-    scaler = joblib.load(DEFAULT_SCALER) if DEFAULT_SCALER and os.path.isfile(DEFAULT_SCALER) else None
+    scaler = (
+        joblib.load(DEFAULT_SCALER)
+        if DEFAULT_SCALER and os.path.isfile(DEFAULT_SCALER)
+        else None
+    )
     return model, scaler
 
 
-def predict_alerts(model, scaler, df: pd.DataFrame, threshold: float = THRESHOLD) -> pd.DataFrame:
+def predict_alerts(
+    model, scaler, df: pd.DataFrame, threshold: float = THRESHOLD
+) -> pd.DataFrame:
     """
     Run predictions on a DataFrame using provided model and scaler.
     Adds 'predicted_label' and 'prediction_prob' columns to the result.
+    Ensures feature alignment and type safety for API/CLI use.
     """
     features = cfg["features"]
-    X = df[features].copy()
+    # Ensure all required features are present
+    missing = set(features) - set(df.columns)
+    if missing:
+        raise ValueError(f"Missing required features: {missing}")
+    # Align columns and convert to float
+    X = df[features].copy().astype(float)
     X_scaled = scaler.transform(X) if scaler is not None else X
 
     probs = model.predict_proba(X_scaled)[:, 1]

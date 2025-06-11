@@ -56,10 +56,12 @@ def input_csv(tmp_path):
     Create a simple CSV with columns f1 and f2, four rows.
     Returns path to that CSV file.
     """
-    df = pd.DataFrame({
-        "f1": [0, 1, 0, 1],
-        "f2": [1, 0, 0, 1],
-    })
+    df = pd.DataFrame(
+        {
+            "f1": [0, 1, 0, 1],
+            "f2": [1, 0, 0, 1],
+        }
+    )
     path = tmp_path / "input.csv"
     df.to_csv(path, index=False)
     return str(path)
@@ -79,11 +81,16 @@ def test_predict_cli_success(input_csv, tmp_model_and_scaler, tmp_path):
     result = runner.invoke(
         predict_cli,
         [
-            "--input-file", input_csv,
-            "--model-file", model_file,
-            "--scaler-file", scaler_file,
-            "--output-file", str(output_path),
-            "--threshold", "0.5",
+            "--input-file",
+            input_csv,
+            "--model-file",
+            model_file,
+            "--scaler-file",
+            scaler_file,
+            "--output-file",
+            str(output_path),
+            "--threshold",
+            "0.5",
         ],
     )
 
@@ -111,7 +118,9 @@ def test_predict_cli_success(input_csv, tmp_model_and_scaler, tmp_path):
 
 
 @pytest.mark.parametrize("missing_arg", ["input", "model", "scaler"])
-def test_predict_cli_missing_file(input_csv, tmp_model_and_scaler, tmp_path, missing_arg):
+def test_predict_cli_missing_file(
+    input_csv, tmp_model_and_scaler, tmp_path, missing_arg
+):
     """
     If any of --input-file, --model-file, or --scaler-file is missing,
     the CLI should exit with code 1.
@@ -122,35 +131,54 @@ def test_predict_cli_missing_file(input_csv, tmp_model_and_scaler, tmp_path, mis
     # Determine which argument to pass as a nonexistent path
     if missing_arg == "input":
         args = [
-            "--input-file", str(tmp_path / "no_input.csv"),
-            "--model-file", model_file,
-            "--scaler-file", scaler_file,
-            "--output-file", str(output_path),
-            "--threshold", "0.5",
+            "--input-file",
+            str(tmp_path / "no_input.csv"),
+            "--model-file",
+            model_file,
+            "--scaler-file",
+            scaler_file,
+            "--output-file",
+            str(output_path),
+            "--threshold",
+            "0.5",
         ]
     elif missing_arg == "model":
         args = [
-            "--input-file", input_csv,
-            "--model-file", str(tmp_path / "no_model.joblib"),
-            "--scaler-file", scaler_file,
-            "--output-file", str(output_path),
-            "--threshold", "0.5",
+            "--input-file",
+            input_csv,
+            "--model-file",
+            str(tmp_path / "no_model.joblib"),
+            "--scaler-file",
+            scaler_file,
+            "--output-file",
+            str(output_path),
+            "--threshold",
+            "0.5",
         ]
     else:  # missing_arg == "scaler"
         args = [
-            "--input-file", input_csv,
-            "--model-file", model_file,
-            "--scaler-file", str(tmp_path / "no_scaler.joblib"),
-            "--output-file", str(output_path),
-            "--threshold", "0.5",
+            "--input-file",
+            input_csv,
+            "--model-file",
+            model_file,
+            "--scaler-file",
+            str(tmp_path / "no_scaler.joblib"),
+            "--output-file",
+            str(output_path),
+            "--threshold",
+            "0.5",
         ]
 
     runner = CliRunner()
     result = runner.invoke(predict_cli, args)
-    assert result.exit_code == 1, f"Expected exit code 1 when '{missing_arg}' is missing"
+    assert (
+        result.exit_code == 1
+    ), f"Expected exit code 1 when '{missing_arg}' is missing"
 
 
-def test_predict_cli_invalid_threshold_non_numeric(input_csv, tmp_model_and_scaler, tmp_path):
+def test_predict_cli_invalid_threshold_non_numeric(
+    input_csv, tmp_model_and_scaler, tmp_path
+):
     """
     If threshold is not a valid float (e.g. "not_a_number"), Click should
     error out with a non-zero exit code.
@@ -162,19 +190,28 @@ def test_predict_cli_invalid_threshold_non_numeric(input_csv, tmp_model_and_scal
     result = runner.invoke(
         predict_cli,
         [
-            "--input-file", input_csv,
-            "--model-file", model_file,
-            "--scaler-file", scaler_file,
-            "--output-file", str(output_path),
-            "--threshold", "not_a_number",
+            "--input-file",
+            input_csv,
+            "--model-file",
+            model_file,
+            "--scaler-file",
+            scaler_file,
+            "--output-file",
+            str(output_path),
+            "--threshold",
+            "not_a_number",
         ],
     )
 
-    assert result.exit_code != 0, f"Expected non-zero exit code for non-numeric threshold"
+    assert (
+        result.exit_code != 0
+    ), f"Expected non-zero exit code for non-numeric threshold"
 
 
 @pytest.mark.parametrize("threshold", ["0", "1", "-0.1"])
-def test_predict_cli_numeric_thresholds_accepted(input_csv, tmp_model_and_scaler, tmp_path, threshold):
+def test_predict_cli_numeric_thresholds_accepted(
+    input_csv, tmp_model_and_scaler, tmp_path, threshold
+):
     """
     Any string that can be cast to float (even "0", "1", or "-0.1") is accepted.
     The CLI should exit with code 0, though downstream behavior may vary.
@@ -186,16 +223,25 @@ def test_predict_cli_numeric_thresholds_accepted(input_csv, tmp_model_and_scaler
     result = runner.invoke(
         predict_cli,
         [
-            "--input-file", input_csv,
-            "--model-file", model_file,
-            "--scaler-file", scaler_file,
-            "--output-file", str(output_path),
-            "--threshold", threshold,
+            "--input-file",
+            input_csv,
+            "--model-file",
+            model_file,
+            "--scaler-file",
+            scaler_file,
+            "--output-file",
+            str(output_path),
+            "--threshold",
+            threshold,
         ],
     )
 
     # CLI should still succeed on numeric thresholds
-    assert result.exit_code == 0, f"CLI failed for numeric threshold '{threshold}': {result.output}"
+    assert (
+        result.exit_code == 0
+    ), f"CLI failed for numeric threshold '{threshold}': {result.output}"
 
     # Output file should exist
-    assert output_path.exists() and output_path.is_file(), f"Output not created for threshold '{threshold}'"
+    assert (
+        output_path.exists() and output_path.is_file()
+    ), f"Output not created for threshold '{threshold}'"

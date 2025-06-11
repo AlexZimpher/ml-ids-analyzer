@@ -11,6 +11,7 @@ class DummyModel:
     - For y=0 → [1.0, 0.0]
     - For y=1 → [0.0, 1.0]
     """
+
     def __init__(self, y_true):
         self._y_true = np.asarray(y_true)
 
@@ -56,7 +57,9 @@ def test_tune_threshold_all_zeros():
     best_thr_zero = tune_threshold(dummy_zero, X_zero, y_all_zero)
 
     # Assert: should return 0.0
-    assert best_thr_zero == pytest.approx(0.0), f"Expected threshold 0.0, got {best_thr_zero}"
+    assert best_thr_zero == pytest.approx(
+        0.0
+    ), f"Expected threshold 0.0, got {best_thr_zero}"
 
 
 def test_tune_threshold_all_ones():
@@ -73,4 +76,6 @@ def test_tune_threshold_all_ones():
     best_thr_one = tune_threshold(dummy_one, X_one, y_all_one)
 
     # Assert: should return 1.0
-    assert best_thr_one == pytest.approx(1.0), f"Expected threshold 1.0, got {best_thr_one}"
+    assert best_thr_one == pytest.approx(
+        1.0
+    ), f"Expected threshold 1.0, got {best_thr_one}"

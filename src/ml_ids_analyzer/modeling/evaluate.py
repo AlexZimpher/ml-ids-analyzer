@@ -11,10 +11,11 @@ from ml_ids_analyzer.config import cfg
 import logging
 from pathlib import Path
 
-import numpy as np                                            # ← Add this line
+import numpy as np  # ← Add this line
+
 # Workaround for numpy’s removal of `np.bool` (so SHAP doesn’t break):
 if not hasattr(np, "bool"):
-    np.bool = bool                                           # ← Add these two lines
+    np.bool = bool  # ← Add these two lines
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -49,7 +50,10 @@ def evaluate_model(y_true, y_pred, model_name: str = "Model", output_dir=None) -
     plt.tight_layout()
 
     out_path = OUTPUT_DIR / f"{model_name}_confusion_matrix.png"
-    plt.savefig(Path(output_dir or cfg["paths"]["output_dir"]) / f"{model_name}_confusion_matrix.png")
+    plt.savefig(
+        Path(output_dir or cfg["paths"]["output_dir"])
+        / f"{model_name}_confusion_matrix.png"
+    )
     logging.info("Saved confusion matrix to %s", out_path)
     plt.close()
 

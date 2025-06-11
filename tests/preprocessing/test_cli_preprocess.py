@@ -21,16 +21,20 @@ def test_preprocess_cli_success(tmp_path):
     raw_dir = tmp_path / "raw_data"
     raw_dir.mkdir()
 
-    df1 = pd.DataFrame({
-        "A": [1, None, 3],
-        "constant": [5, 5, 5],
-        "Label": ["Benign", "Malware", "Benign"],
-    })
-    df2 = pd.DataFrame({
-        "A": [4, 5],
-        "constant": [5, 5],
-        "Label": ["Malware", None],
-    })
+    df1 = pd.DataFrame(
+        {
+            "A": [1, None, 3],
+            "constant": [5, 5, 5],
+            "Label": ["Benign", "Malware", "Benign"],
+        }
+    )
+    df2 = pd.DataFrame(
+        {
+            "A": [4, 5],
+            "constant": [5, 5],
+            "Label": ["Malware", None],
+        }
+    )
 
     (raw_dir / "file1.csv").write_text(df1.to_csv(index=False))
     (raw_dir / "file2.csv").write_text(df2.to_csv(index=False))
@@ -41,8 +45,10 @@ def test_preprocess_cli_success(tmp_path):
     result = runner.invoke(
         preprocess_cli,
         [
-            "--data-dir", str(raw_dir),
-            "--output-file", str(output_file),
+            "--data-dir",
+            str(raw_dir),
+            "--output-file",
+            str(output_file),
         ],
     )
 
@@ -73,8 +79,10 @@ def test_preprocess_cli_failure_missing_dir(tmp_path):
     result = runner.invoke(
         preprocess_cli,
         [
-            "--data-dir", str(nonexist),
-            "--output-file", str(output_file),
+            "--data-dir",
+            str(nonexist),
+            "--output-file",
+            str(output_file),
         ],
     )
 
@@ -99,8 +107,10 @@ def test_preprocess_cli_failure_no_csv(tmp_path):
     result = runner.invoke(
         preprocess_cli,
         [
-            "--data-dir", str(empty_dir),
-            "--output-file", str(output_file),
+            "--data-dir",
+            str(empty_dir),
+            "--output-file",
+            str(output_file),
         ],
     )
 

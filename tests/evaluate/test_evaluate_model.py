@@ -37,12 +37,16 @@ def test_evaluate_model_saves_confusion_matrix_and_prints_report(tmp_path, capsy
     assert "accuracy" in captured, "Classification report missing 'accuracy'"
 
     # Assert ROC AUC Score line appears exactly
-    assert "roc auc score: 1.0000" in captured, f"Expected ROC AUC = 1.0000, got:\n{captured}"
+    assert (
+        "roc auc score: 1.0000" in captured
+    ), f"Expected ROC AUC = 1.0000, got:\n{captured}"
 
     # Assert confusion-matrix file was created under tmp_path
     expected_filename = f"{model_name}_confusion_matrix.png"
     output_file = tmp_path / expected_filename
-    assert output_file.exists() and output_file.is_file(), f"Expected file {expected_filename} not found in {tmp_path}"
+    assert (
+        output_file.exists() and output_file.is_file()
+    ), f"Expected file {expected_filename} not found in {tmp_path}"
     assert output_file.stat().st_size > 0, "Saved PNG file is empty"
 
 
@@ -75,5 +79,7 @@ def test_evaluate_model_edge_cases_no_positive_class(tmp_path, capsys, y_true, y
     # Assert confusion-matrix file was created
     expected_filename = f"{model_name}_confusion_matrix.png"
     output_file = tmp_path / expected_filename
-    assert output_file.exists() and output_file.is_file(), f"Expected file {expected_filename} not found"
+    assert (
+        output_file.exists() and output_file.is_file()
+    ), f"Expected file {expected_filename} not found"
     assert output_file.stat().st_size > 0, "Saved PNG file is empty"

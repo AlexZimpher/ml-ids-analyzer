@@ -47,15 +47,27 @@ cd ml-ids-analyzer
 
 ---
 
-## 🌐 Run the API (FastAPI)
+## 🌐 Run the API & Dashboard
 
-Launch the prediction API server:
+### 1. Start the FastAPI prediction server
 
 ```bash
-  poetry run uvicorn ml_ids_analyzer.api.app:app --host 0.0.0.0 --port 8000
+poetry run uvicorn src.ml_ids_analyzer.api.app:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Test it at: [http://localhost:8000/docs](http://localhost:8000/docs)
+- Test the API at: [http://localhost:8000/docs](http://localhost:8000/docs)
+- Main prediction endpoint: `POST /predict/csv` (upload a CSV file)
+
+### 2. Start the Streamlit Dashboard
+
+In a new terminal:
+
+```bash
+poetry run streamlit run src/ml_ids_analyzer/api/dashboard.py
+```
+
+- Access the dashboard at: [http://localhost:8501](http://localhost:8501)
+- The dashboard lets you upload a CSV, view predictions, download results, and see visualizations.
 
 ---
 
@@ -66,11 +78,9 @@ Generated automatically during training and saved to `/outputs`:
 - **Confusion Matrix**
  
   ![Confusion Matrix](outputs/Random_Forest_tuned_confusion_matrix.png)
-
 - **Precision-Recall Curve**
 
   ![PR Curve](outputs/precision_recall_curve.png)
-
 - **SHAP Feature Importance**
 
   ![SHAP Summary](outputs/shap_summary.png)
@@ -89,7 +99,7 @@ ml-ids-analyzer/
 │   ├── preprocessing/       # Feature extraction & cleaning
 │   ├── modeling/            # Training & threshold tuning
 │   ├── inference/           # Prediction logic
-│   └── api/                 # FastAPI app
+│   └── api/                 # FastAPI app & Streamlit dashboard
 └── tests/                   # Unit tests
 ```
 
