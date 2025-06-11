@@ -1,30 +1,3 @@
-# Ignore generated feature CSVs and backups
-/data/suricata_features.csv
-/data/cicids2017_clean_backup.csv
-/data/new_data.csv
-
-# Ignore raw data folder
-/data/cicids2017_raw/
-
-# Ignore outputs from model training/evaluation
-/outputs/
-
-# Ignore one-off test JSONs
-/alert1.json
-/suricata_test/
-
-# Ignore any leftover Docker src folder
-/docker/src/
-
-# Ignore repo-tree dump
-repo-tree.txt
-
-# If you do not want to commit model + scaler:
-/artifacts/
-
-# Jupyter notebook checkpoints
-**/.ipynb_checkpoints/
-
 # Python bytecode
 **/__pycache__/
 *.pyc
@@ -33,4 +6,7 @@ repo-tree.txt
 .coverage
 .coverage.*
 coverage.xml
-htmlcov/
+htmlcov/S
+
+# Large Files
+data/*
