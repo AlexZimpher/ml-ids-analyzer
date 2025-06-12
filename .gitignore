@@ -17,7 +17,6 @@ htmlcov/
 .ipynb_checkpoints/
 
 # Data and outputs
-outputs/
 data/
 
 # Local config
