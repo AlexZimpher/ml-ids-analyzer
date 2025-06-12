@@ -132,20 +132,53 @@ ml-ids-analyzer/
 
 ## 📊 Visualizations (Auto-generated)
 
-- **Confusion Matrix**: Shows model accuracy and error types.
-  
-  ![Confusion Matrix](outputs/Random_Forest_tuned_confusion_matrix.png)
-  > *Interpretation: Diagonal = correct predictions; off-diagonal = errors.*
+### Confusion Matrix
 
-- **Precision-Recall Curve**: Evaluates model performance across thresholds.
-  
-  ![PR Curve](outputs/precision_recall_curve.png)
-  > *Interpretation: Higher area = better precision/recall tradeoff.*
+![Confusion Matrix](outputs/Random_Forest_tuned_confusion_matrix.png)
 
-- **SHAP Feature Importance**: Explains which features drive model decisions.
-  
-  ![SHAP Summary](outputs/shap_summary.png)
-  > *Interpretation: Top features have the most impact on predictions.*
+**Interpretation**
+
+* **True Negatives (TN): 335,909** – benign traffic correctly classified.
+* **True Positives (TP):  81,476** – malicious traffic correctly detected.
+* **False Positives (FP):   4,789** – benign events flagged as malicious (≈1.4% of benign).
+* **False Negatives (FN):   2,008** – malicious events missed (≈2.4% of malicious).
+* **Takeaway:** The model maintains a low miss rate (FN) while keeping the false alarm rate (FP) manageable, making it suitable for automated triage with human review of alerts.
+
+---
+
+### Precision–Recall Curve
+
+![Precision–Recall Curve](outputs/precision_recall_curve.png)
+
+**Interpretation**
+
+* **Precision** measures the fraction of alerts that are true threats.
+* **Recall** measures the fraction of actual threats detected.
+* As we slide the decision threshold from 0→1, precision typically rises at the expense of recall.
+* **Optimal Threshold (0.38):**
+
+  * **Precision ≈ 0.80**, **Recall ≈ 0.50**, yielding **F₁ = 0.80**.
+  * Balances catching half of all threats while keeping four out of five alerts actionable.
+* For use cases that demand higher recall (catching more threats), precision drops below 0.50 once recall exceeds ~0.65.
+
+---
+
+### SHAP Feature-Importance Summary
+
+![SHAP Summary](outputs/shap_summary.png)
+
+**Interpretation**
+
+* Features are ranked top→bottom by their average absolute SHAP value (impact on the model’s output).
+* Each dot represents one sample:
+
+  * **Color (blue→red)** indicates low→high feature value.
+  * **Position on x-axis** shows whether that sample pushes the prediction toward benign (negative SHAP) or malicious (positive SHAP).
+* **Feature 4** is the strongest predictor:
+
+  * High values (red) drive a malicious prediction.
+  * Low values (blue) drive a benign prediction.
+* **Features 3 and 2** also contribute substantially; those lower in the list have progressively less influence on the final decision.
 
 ---
 
