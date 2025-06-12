@@ -1,7 +1,6 @@
 # File: tests/modeling/test_train_random_forest.py
 
 import numpy as np
-import pytest
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 

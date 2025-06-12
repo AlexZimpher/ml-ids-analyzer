@@ -1,7 +1,7 @@
 """
 Streamlit dashboard for ML-IDS Analyzer.
 """
-import os
+
 import streamlit as st
 import pandas as pd
 import requests
@@ -65,7 +65,7 @@ def main():
                     "text/csv",
                 )
             }
-            response = requests.post(API_URL, files=files)
+            response = requests.post(API_URL, files=files, timeout=10)
             if response.status_code == 200:
                 result = response.json()
                 summary = result["summary"]

@@ -5,7 +5,6 @@ import numpy as np
 import pytest
 import joblib
 from click.testing import CliRunner
-from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 

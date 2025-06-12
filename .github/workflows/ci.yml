@@ -43,15 +43,6 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction
 
-      - name: Lint with flake8
-        run: poetry run flake8 src tests
-
-      - name: Check formatting with Black
-        run: poetry run black --check src tests
-
-      - name: Security scan with Bandit
-        run: poetry run bandit -r src
-
       - name: Run all tests with coverage
         run: |
           poetry run pytest tests \

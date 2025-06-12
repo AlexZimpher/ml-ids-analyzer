@@ -5,7 +5,6 @@ import numpy as np
 import pytest
 import joblib
 from click.testing import CliRunner
-from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 
@@ -213,7 +212,7 @@ def test_predict_cli_invalid_threshold_non_numeric(
 
     assert (
         result.exit_code != 0
-    ), f"Expected non-zero exit code for non-numeric threshold"
+    ), "Expected non-zero exit code for non-numeric threshold"
 
 
 @pytest.mark.parametrize("threshold", ["0", "1", "-0.1"])

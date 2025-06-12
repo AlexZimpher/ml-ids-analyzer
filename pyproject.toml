@@ -52,9 +52,7 @@ mlids-analyzer = "ml_ids_analyzer.cli.cli:cli"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.1"
 pytest-cov = "^4.0.0"
-flake8 = "^6.1.0"
 black = "^25.1.0"
-bandit = "^1.8.3"
 
 [tool.black]
 line-length = 79

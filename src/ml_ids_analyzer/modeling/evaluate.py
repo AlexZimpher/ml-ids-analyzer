@@ -35,7 +35,7 @@ def evaluate_model(
     """Print classification report, ROC AUC, and save confusion matrix."""
     # Log and print the evaluation report header
     logging.info("=== Evaluation Report: %s ===", model_name)
-    
+
     # Print the classification report and ROC AUC score
     print(classification_report(y_true, y_pred))
     print(f"ROC AUC Score: {roc_auc_score(y_true, y_pred):.4f}")

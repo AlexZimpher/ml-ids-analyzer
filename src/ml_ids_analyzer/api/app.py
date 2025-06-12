@@ -1,6 +1,7 @@
 """
 FastAPI app for ML-IDS-Analyzer REST API.
 """
+
 from typing import Optional
 import os
 
@@ -19,6 +20,7 @@ app = FastAPI(
     version=cfg.get("version", "0.1.0"),
 )
 
+
 # Root endpoint for health/info
 @app.get("/", include_in_schema=False)
 def root():
@@ -26,11 +28,13 @@ def root():
         "message": "ML-IDS-Analyzer API is up. Try POST /predict or GET /health"
     }
 
+
 # Health check endpoint
 @app.get("/health", tags=["health"])
 def health():
     """Simple liveness probe."""
     return {"status": "ok"}
+
 
 # Prediction endpoint for CSV upload
 @app.post("/predict/csv")

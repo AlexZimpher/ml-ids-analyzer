@@ -1,9 +1,7 @@
 # File: tests/evaluate/test_evaluate_model.py
 
-import os
 import numpy as np
 import pytest
-from pathlib import Path
 
 # Import evaluate_model from its actual location
 from ml_ids_analyzer.modeling.evaluate import evaluate_model
