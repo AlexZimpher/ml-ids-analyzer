@@ -12,7 +12,7 @@ API_URL = "http://localhost:8000/predict/csv"  # Update if deployed elsewhere
 def main():
     # Set up Streamlit page
     st.set_page_config(page_title="ML-IDS Analyzer Dashboard", layout="wide")
-    st.title("4c8 ML-IDS Analyzer Dashboard")
+    st.title("ML-IDS Analyzer Dashboard")
 
     # Project description and instructions
     st.markdown(
