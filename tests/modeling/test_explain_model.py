@@ -33,7 +33,9 @@ def test_explain_model_creates_shap_summary(tmp_path, monkeypatch):
     if "paths" not in config_module.cfg:
         config_module.cfg["paths"] = {}
     # Monkeypatch cfg["paths"]["output_dir"] so explain_model writes into tmp_path
-    monkeypatch.setitem(config_module.cfg["paths"], "output_dir", str(tmp_path))
+    monkeypatch.setitem(
+        config_module.cfg["paths"], "output_dir", str(tmp_path)
+    )
 
     # Act: run explain_model
     explain_model(model, X)

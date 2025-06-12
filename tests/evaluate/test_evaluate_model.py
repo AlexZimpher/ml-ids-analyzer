@@ -9,7 +9,9 @@ from pathlib import Path
 from ml_ids_analyzer.modeling.evaluate import evaluate_model
 
 
-def test_evaluate_model_saves_confusion_matrix_and_prints_report(tmp_path, capsys):
+def test_evaluate_model_saves_confusion_matrix_and_prints_report(
+    tmp_path, capsys
+):
     """
     1) Use y_true and y_pred that are identical (perfect predictions):
        - classification_report should report accuracy = 1.00
@@ -57,7 +59,9 @@ def test_evaluate_model_saves_confusion_matrix_and_prints_report(tmp_path, capsy
         (np.array([1, 1, 1]), np.array([1, 1, 1])),  # all ones
     ],
 )
-def test_evaluate_model_edge_cases_no_positive_class(tmp_path, capsys, y_true, y_pred):
+def test_evaluate_model_edge_cases_no_positive_class(
+    tmp_path, capsys, y_true, y_pred
+):
     """
     If y_true contains only one class, roc_auc_score yields nan and
     evaluate_model prints “ROC AUC Score: nan” without raising.
@@ -74,7 +78,9 @@ def test_evaluate_model_edge_cases_no_positive_class(tmp_path, capsys, y_true, y
     # Capture stdout
     captured = capsys.readouterr().out.lower()
     # Assert “roc auc score: nan” appears
-    assert "roc auc score: nan" in captured, f"Expected ROC AUC = nan, got:\n{captured}"
+    assert (
+        "roc auc score: nan" in captured
+    ), f"Expected ROC AUC = nan, got:\n{captured}"
 
     # Assert confusion-matrix file was created
     expected_filename = f"{model_name}_confusion_matrix.png"

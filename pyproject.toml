@@ -7,7 +7,7 @@ name = "ml-ids-analyzer"
 version = "0.1.0"
 description = "A machine learning pipeline and API for analyzing IDS alerts using CICIDS2017."
 authors = [
-  "Alexander Gregory Zimpher <alexanderzimpher@gmail.com>",
+  "Alexander Zimpher <alexanderzimpher@gmail.com>",
   "Spencer Hendren <spencer.hendren@gmail.com>"
 ]
 readme = "README.md"
@@ -50,15 +50,16 @@ mlids-preprocess = "ml_ids_analyzer.preprocessing.preprocess:main"
 mlids-suricata-features = "ml_ids_analyzer.preprocessing.suricata_to_features:main"
 mlids-train = "ml_ids_analyzer.modeling.train:main"
 mlids-predict = "ml_ids_analyzer.inference.predict:main"
-mlids-analyzer = "ml_ids_analyzer.cli:cli"
+mlids-analyzer = "ml_ids_analyzer.cli.cli:cli"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "6.1.0"
 black = "^25.1.0"
 bandit = "^1.8.3"
 
+
 [tool.black]
-line-length = 88
+line-length = 79
 
 [tool.isort]
 profile = "black"

@@ -1,31 +1,38 @@
-from typing import Any, Dict, List, Optional
+"""
+FastAPI app for ML-IDS-Analyzer REST API.
+"""
+from typing import Optional
 import os
 
 import joblib
 import pandas as pd
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
-from pydantic import BaseModel, Field
 
 from ml_ids_analyzer.config import cfg
 
+# Create FastAPI app instance
 app = FastAPI(
     title="ML-IDS-Analyzer API",
-    description="Predict intrusion alerts via REST endpoints and interactive dashboard",
+    description=(
+        "Predict intrusion alerts via REST endpoints and interactive dashboard"
+    ),
     version=cfg.get("version", "0.1.0"),
 )
 
-
+# Root endpoint for health/info
 @app.get("/", include_in_schema=False)
 def root():
-    return {"message": "ML-IDS-Analyzer API is up. Try POST /predict or GET /health"}
+    return {
+        "message": "ML-IDS-Analyzer API is up. Try POST /predict or GET /health"
+    }
 
-
+# Health check endpoint
 @app.get("/health", tags=["health"])
 def health():
     """Simple liveness probe."""
     return {"status": "ok"}
 
-
+# Prediction endpoint for CSV upload
 @app.post("/predict/csv")
 async def predict_csv(
     file: UploadFile = File(..., description="CSV file with feature columns"),
@@ -33,24 +40,32 @@ async def predict_csv(
         cfg.get("paths", {}).get("model_file", "outputs/model.joblib")
     ),
     scaler_file: Optional[str] = Form(cfg.get("paths", {}).get("scaler_file")),
-    threshold: Optional[float] = Form(cfg.get("inference", {}).get("threshold", 0.5)),
+    threshold: Optional[float] = Form(
+        cfg.get("inference", {}).get("threshold", 0.5)
+    ),
 ):
     """
     Upload a CSV file to get predictions. Returns summary statistics and a preview of results.
     """
     # Validate model file
     if not model_file or not os.path.isfile(model_file):
-        raise HTTPException(status_code=400, detail=f"Model not found: {model_file}")
+        raise HTTPException(
+            status_code=400, detail=f"Model not found: {model_file}"
+        )
 
     if scaler_file and not os.path.isfile(scaler_file):
-        raise HTTPException(status_code=400, detail=f"Scaler not found: {scaler_file}")
+        raise HTTPException(
+            status_code=400, detail=f"Scaler not found: {scaler_file}"
+        )
 
     # Load model and scaler
     try:
         model = joblib.load(model_file)
         scaler = joblib.load(scaler_file) if scaler_file else None
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to load model/scaler: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to load model/scaler: {e}"
+        )
 
     # Read CSV into DataFrame
     try:
@@ -104,7 +119,6 @@ async def predict_csv(
             "threshold": threshold,
         },
         "preview": preview,
-        "results_csv": "Predictions available as CSV via dashboard/download.",
     }
 
 

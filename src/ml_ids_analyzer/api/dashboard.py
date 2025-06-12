@@ -1,19 +1,18 @@
-import sys
+"""
+Streamlit dashboard for ML-IDS Analyzer.
+"""
 import os
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-
 import streamlit as st
 import pandas as pd
 import requests
-import io
 
 API_URL = "http://localhost:8000/predict/csv"  # Update if deployed elsewhere
 
 
 def main():
+    # Set up Streamlit page
     st.set_page_config(page_title="ML-IDS Analyzer Dashboard", layout="wide")
-    st.title("📊 ML-IDS Analyzer Dashboard")
+    st.title("4c8 ML-IDS Analyzer Dashboard")
 
     # Project description and instructions
     st.markdown(
@@ -41,27 +40,37 @@ def main():
         unsafe_allow_html=True,
     )
 
+    # Sidebar for file upload
     st.sidebar.header("Upload Input Data")
     uploaded_file = st.sidebar.file_uploader("Upload a CSV file", type=["csv"])
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("**About this project:**")
     st.sidebar.info(
-        "ML-IDS Analyzer is a showcase of ML-powered intrusion detection. Built for recruiters and engineers.\n\n"
+        "ML-IDS Analyzer is a showcase of ML-powered intrusion detection. "
+        "Built for recruiters and engineers.\n\n"
         "[GitHub Repo](https://github.com/your-repo) | "
         "[Docs](https://github.com/your-repo/docs)"
     )
 
+    # If a file is uploaded, show preview and run prediction
     if uploaded_file:
         st.write("### Uploaded Data", pd.read_csv(uploaded_file).head())
         uploaded_file.seek(0)
         with st.spinner("Running predictions on uploaded data..."):
-            files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "text/csv")}
+            files = {
+                "file": (
+                    uploaded_file.name,
+                    uploaded_file.getvalue(),
+                    "text/csv",
+                )
+            }
             response = requests.post(API_URL, files=files)
             if response.status_code == 200:
                 result = response.json()
                 summary = result["summary"]
                 preview = pd.DataFrame(result["preview"])
+                # Show summary box
                 st.markdown(
                     f"""
                 <div class="summary-box" style="
@@ -84,12 +93,15 @@ def main():
                 st.write("### Prediction Preview (first 10 rows)")
 
                 def highlight_attacks(row):
+                    # Highlight rows with predicted attacks
                     if row.get("pred_attack", 0) == 1:
                         return [
                             "background-color: #fff0f0; color: #222; font-weight: bold;"
                         ] * len(row)
                     else:
-                        return ["background-color: #f8fafd; color: #222;"] * len(row)
+                        return [
+                            "background-color: #f8fafd; color: #222;"
+                        ] * len(row)
 
                 if not preview.empty:
                     st.dataframe(

@@ -1,27 +1,32 @@
-# ml_ids_analyzer/inference/predict.py
+"""
+Inference and prediction utilities for ml_ids_analyzer.
+"""
 
-import os
-import logging
-from typing import Optional, Tuple
-
-import click
-import pandas as pd
-import numpy as np
 import joblib
-from pathlib import Path
+import click
+import logging
+import numpy as np
+import os
+import pandas as pd
+
+from typing import Optional, Tuple
 
 from ml_ids_analyzer.config import cfg
 
-# Logger
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
+# Logger setup
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s"
+)
 _logger = logging.getLogger(__name__)
 
 # Config fallback values
 model_cfg = cfg.get("model", {})
 infer_cfg = cfg.get("inference", {})
 
+# Default paths and threshold
 DEFAULT_INPUT: str = infer_cfg.get(
-    "input_csv", cfg.get("data", {}).get("clean_file", "data/cicids2017_clean.csv")
+    "input_csv",
+    cfg.get("data", {}).get("clean_file", "data/cicids2017_clean.csv"),
 )
 DEFAULT_MODEL: str = cfg.get("paths", {}).get(
     "model_file", "outputs/random_forest_model.joblib"
@@ -70,6 +75,7 @@ def predict_alerts(
     return result
 
 
+# CLI for running predictions from the command line
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option(
     "--input-file",
@@ -99,7 +105,7 @@ def predict_alerts(
     "--threshold",
     default=THRESHOLD,
     show_default=True,
-    help="Probability threshold for classifying an attack",
+    help="Threshold for classifying as attack",
 )
 def main(
     input_file: str,
@@ -108,7 +114,9 @@ def main(
     output_file: str,
     threshold: float,
 ) -> None:
-    """CLI: Load model and input file, run predictions, save results."""
+    """
+    CLI entry point: load data, run predictions, and save results to CSV.
+    """
     # Validate input files
     for path, desc in [(input_file, "input CSV"), (model_file, "model file")]:
         if not os.path.isfile(path):

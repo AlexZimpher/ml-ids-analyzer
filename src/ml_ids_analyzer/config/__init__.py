@@ -1,4 +1,7 @@
 # src/ml_ids_analyzer/config/__init__.py
+"""
+Configuration loader for ml_ids_analyzer.
+"""
 
 import os
 from pathlib import Path

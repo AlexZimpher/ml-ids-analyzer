@@ -1,14 +1,19 @@
+"""
+Explainability utilities for ml_ids_analyzer.
+"""
+
 import logging
 import matplotlib.pyplot as plt
 import shap
-import numpy as np
 from pathlib import Path
 
 from ml_ids_analyzer.config import cfg
 
+# Output directory for SHAP plots
 OUTPUT_DIR = Path(cfg["paths"]["output_dir"])  # Ensure Path object
 
 
+# Generate SHAP summary plot for a model and training data
 def explain_model(model, X_train):
     """Generate SHAP summary plot using a sample of the training set."""
     try:

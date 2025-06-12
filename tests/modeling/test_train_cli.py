@@ -59,9 +59,13 @@ def override_output_paths(tmp_path, monkeypatch):
         config_module.cfg["paths"] = {}
 
     # Override cfg so that nothing crashes if any code re‐reads cfg again
-    monkeypatch.setitem(config_module.cfg["paths"], "output_dir", str(tmp_path))
     monkeypatch.setitem(
-        config_module.cfg["paths"], "predictions", str(tmp_path / "predictions.csv")
+        config_module.cfg["paths"], "output_dir", str(tmp_path)
+    )
+    monkeypatch.setitem(
+        config_module.cfg["paths"],
+        "predictions",
+        str(tmp_path / "predictions.csv"),
     )
     monkeypatch.setitem(
         config_module.cfg["paths"],
@@ -69,17 +73,25 @@ def override_output_paths(tmp_path, monkeypatch):
         str(tmp_path / "random_forest_model.joblib"),
     )
     monkeypatch.setitem(
-        config_module.cfg["paths"], "scaler_file", str(tmp_path / "scaler.joblib")
+        config_module.cfg["paths"],
+        "scaler_file",
+        str(tmp_path / "scaler.joblib"),
     )
 
     # Now override the module‐level constants in train_module directly
     # (these were already bound at import time to whatever cfg had originally).
     monkeypatch.setattr(train_module, "OUTPUT_DIR", str(tmp_path))
-    monkeypatch.setattr(train_module, "PRED_CSV", str(tmp_path / "predictions.csv"))
     monkeypatch.setattr(
-        train_module, "MODEL_FILE", str(tmp_path / "random_forest_model.joblib")
+        train_module, "PRED_CSV", str(tmp_path / "predictions.csv")
     )
-    monkeypatch.setattr(train_module, "SCALER_FILE", str(tmp_path / "scaler.joblib"))
+    monkeypatch.setattr(
+        train_module,
+        "MODEL_FILE",
+        str(tmp_path / "random_forest_model.joblib"),
+    )
+    monkeypatch.setattr(
+        train_module, "SCALER_FILE", str(tmp_path / "scaler.joblib")
+    )
 
     return tmp_path
 
@@ -107,7 +119,9 @@ def test_train_cli_creates_artifacts(
 
     # 1) Check predictions CSV
     pred_csv = tmp / "predictions.csv"
-    assert pred_csv.exists() and pred_csv.is_file(), "predictions.csv not created"
+    assert (
+        pred_csv.exists() and pred_csv.is_file()
+    ), "predictions.csv not created"
     df_pred = pd.read_csv(pred_csv)
     # Expect columns ["Actual", "Predicted"]
     assert set(df_pred.columns) == {"Actual", "Predicted"}
@@ -126,7 +140,9 @@ def test_train_cli_creates_artifacts(
 
     # 3) Check scaler file
     scaler_file = tmp / "scaler.joblib"
-    assert scaler_file.exists() and scaler_file.is_file(), "scaler.joblib not created"
+    assert (
+        scaler_file.exists() and scaler_file.is_file()
+    ), "scaler.joblib not created"
     loaded_scaler = joblib.load(scaler_file)
     assert isinstance(
         loaded_scaler, StandardScaler
@@ -140,5 +156,7 @@ def test_train_cli_creates_artifacts(
 
     # 5) Check SHAP summary PNG
     shap_png = tmp / "shap_summary.png"
-    assert shap_png.exists() and shap_png.is_file(), "shap_summary.png not created"
+    assert (
+        shap_png.exists() and shap_png.is_file()
+    ), "shap_summary.png not created"
     assert shap_png.stat().st_size > 0, "shap_summary.png is empty"

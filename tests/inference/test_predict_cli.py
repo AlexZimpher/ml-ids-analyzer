@@ -10,7 +10,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 
 import ml_ids_analyzer.config as config_module
-from ml_ids_analyzer.inference.predict import main as predict_cli  # entry point
+from ml_ids_analyzer.inference.predict import (
+    main as predict_cli,
+)  # entry point
 
 
 @pytest.fixture(autouse=True)
@@ -98,7 +100,9 @@ def test_predict_cli_success(input_csv, tmp_model_and_scaler, tmp_path):
     assert result.exit_code == 0, f"CLI failed unexpectedly:\n{result.output}"
 
     # 2) Output CSV should exist
-    assert output_path.exists() and output_path.is_file(), "Output CSV not created"
+    assert (
+        output_path.exists() and output_path.is_file()
+    ), "Output CSV not created"
 
     # 3) Read the output and verify columns
     out_df = pd.read_csv(output_path)
@@ -113,8 +117,12 @@ def test_predict_cli_success(input_csv, tmp_model_and_scaler, tmp_path):
     preds = (probs >= 0.5).astype(int)
 
     # Compare values
-    assert np.allclose(out_df["prob_attack"].values, probs)
-    assert np.array_equal(out_df["pred_attack"].values, preds)
+    assert np.allclose(
+        np.asarray(out_df["prob_attack"].values), np.asarray(probs)
+    )
+    assert np.array_equal(
+        np.asarray(out_df["pred_attack"].values), np.asarray(preds)
+    )
 
 
 @pytest.mark.parametrize("missing_arg", ["input", "model", "scaler"])

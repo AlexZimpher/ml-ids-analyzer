@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
+# Training pipeline for ml_ids_analyzer
 """
-Training entry point for ML-IDS-Analyzer.
-
 This script loads cleaned CICIDS2017 data, trains a Random Forest model
 (with optional hyperparameter tuning), tunes the decision threshold,
 evaluates performance, generates SHAP plots, and saves model artifacts.
@@ -23,10 +22,12 @@ from ml_ids_analyzer.config import cfg as base_cfg
 from ml_ids_analyzer.modeling.evaluate import evaluate_model, tune_threshold
 from ml_ids_analyzer.explainability.explain import explain_model
 
-# --- Logging ---
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s"
+)
 
-# --- Dynamic Config Override ---
+# Load config and allow override via environment variable
 cfg = base_cfg.copy()
 output_override = os.getenv("MLIDS_OUTPUT_DIR")
 if output_override:
@@ -36,7 +37,7 @@ if output_override:
     cfg["paths"]["model_file"] = output_path / "random_forest_model.joblib"
     cfg["paths"]["scaler_file"] = output_path / "scaler.joblib"
 
-# --- Config Constants ---
+# Config constants
 DATA_FILE = cfg["data"]["clean_file"]
 OUTPUT_DIR = cfg["paths"]["output_dir"]
 PRED_CSV = cfg["paths"]["predictions"]
@@ -46,12 +47,15 @@ FEATURES = cfg["features"]
 LABEL = cfg["label_column"]
 RF_CONFIG = cfg["model"]["random_forest"]
 
+# Helper to get base RF params
+
 
 def _get_base_rf_params() -> dict:
     """Return RF_CONFIG without 'search_params' key."""
     return {k: v for k, v in RF_CONFIG.items() if k != "search_params"}
 
 
+# Hyperparameter search for Random Forest
 def search_hyperparameters(
     X_train: np.ndarray, y_train: pd.Series
 ) -> RandomForestClassifier:
@@ -71,11 +75,13 @@ def search_hyperparameters(
     )
     search.fit(X_train, y_train)
     logging.info("Best hyperparameters found: %s", search.best_params_)
-    return search.best_estimator_
+    return search.best_estimator_  # type: ignore
 
 
+# Main training function
 def train_model(no_search: bool = False) -> None:
     """Main training pipeline."""
+    # Load and clean data
     df = pd.read_csv(DATA_FILE, skipinitialspace=True)
     df.columns = df.columns.str.strip()
     df.dropna(subset=FEATURES + [LABEL], inplace=True)
@@ -87,6 +93,7 @@ def train_model(no_search: bool = False) -> None:
     X = df[FEATURES]
     y = df[LABEL]
 
+    # Split data into train/test
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
@@ -95,16 +102,19 @@ def train_model(no_search: bool = False) -> None:
         random_state=RF_CONFIG.get("random_state", None),
     )
 
+    # Fit scaler
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
+    # Hyperparameter tuning or default training
     if not no_search and "search_params" in RF_CONFIG:
         model = search_hyperparameters(X_train_scaled, y_train)
     else:
         model = RandomForestClassifier(**_get_base_rf_params())
         model.fit(X_train_scaled, y_train)
 
+    # Split test set for final evaluation
     X_val, X_final, y_val, y_final = train_test_split(
         X_test_scaled,
         y_test,
@@ -113,19 +123,23 @@ def train_model(no_search: bool = False) -> None:
         random_state=RF_CONFIG.get("random_state", None),
     )
 
+    # Threshold tuning and final prediction
     best_thr = tune_threshold(model, X_val, y_val)
     logging.info("Using probability threshold: %.3f", best_thr)
 
     probs_final = model.predict_proba(X_final)[:, 1]
     y_pred_final = (probs_final >= best_thr).astype(int)
 
+    # Model evaluation
     evaluate_model(y_final, y_pred_final, model_name="Random Forest (tuned)")
 
+    # SHAP explainability
     try:
         explain_model(model, X_train_scaled)
     except Exception as e:
         logging.warning("SHAP explainability failed: %s", e)
 
+    # Save outputs
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     pd.DataFrame({"Actual": y_final, "Predicted": y_pred_final}).to_csv(
         PRED_CSV, index=False

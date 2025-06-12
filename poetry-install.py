@@ -52,7 +52,9 @@ from urllib.request import urlopen
 
 
 SHELL = os.getenv("SHELL", "")
-WINDOWS = sys.platform.startswith("win") or (sys.platform == "cli" and os.name == "nt")
+WINDOWS = sys.platform.startswith("win") or (
+    sys.platform == "cli" and os.name == "nt"
+)
 MINGW = sysconfig.get_platform().startswith("mingw")
 MACOS = sys.platform == "darwin"
 
@@ -159,7 +161,9 @@ def data_dir() -> Path:
     elif MACOS:
         base_dir = Path("~/Library/Application Support").expanduser()
     else:
-        base_dir = Path(os.getenv("XDG_DATA_HOME", "~/.local/share")).expanduser()
+        base_dir = Path(
+            os.getenv("XDG_DATA_HOME", "~/.local/share")
+        ).expanduser()
 
     base_dir = base_dir.resolve()
     return base_dir / "pypoetry"
@@ -301,7 +305,9 @@ class VirtualEnvironment:
         )
         # str is for compatibility with subprocess.run on CPython <= 3.7 on Windows
         self._python = str(
-            self._path.joinpath(self._bin_path, "python.exe" if WINDOWS else "python")
+            self._path.joinpath(
+                self._bin_path, "python.exe" if WINDOWS else "python"
+            )
         )
 
     @property
@@ -328,7 +334,9 @@ class VirtualEnvironment:
             import ensurepip  # noqa: F401
             import venv
 
-            builder = venv.EnvBuilder(clear=True, with_pip=True, symlinks=False)
+            builder = venv.EnvBuilder(
+                clear=True, with_pip=True, symlinks=False
+            )
             context = builder.ensure_directories(target)
 
             if (
@@ -341,19 +349,26 @@ class VirtualEnvironment:
             builder.create(target)
         except ImportError:
             # fallback to using virtualenv package if venv is not available, eg: ubuntu
-            python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
-            virtualenv_bootstrap_url = (
-                f"https://bootstrap.pypa.io/virtualenv/{python_version}/virtualenv.pyz"
+            python_version = (
+                f"{sys.version_info.major}.{sys.version_info.minor}"
             )
+            virtualenv_bootstrap_url = f"https://bootstrap.pypa.io/virtualenv/{python_version}/virtualenv.pyz"
 
-            with tempfile.TemporaryDirectory(prefix="poetry-installer") as temp_dir:
+            with tempfile.TemporaryDirectory(
+                prefix="poetry-installer"
+            ) as temp_dir:
                 virtualenv_pyz = Path(temp_dir) / "virtualenv.pyz"
                 request = Request(
-                    virtualenv_bootstrap_url, headers={"User-Agent": "Python Poetry"}
+                    virtualenv_bootstrap_url,
+                    headers={"User-Agent": "Python Poetry"},
                 )
                 virtualenv_pyz.write_bytes(urlopen(request).read())
                 cls.run(
-                    sys.executable, virtualenv_pyz, "--clear", "--always-copy", target
+                    sys.executable,
+                    virtualenv_pyz,
+                    "--clear",
+                    "--always-copy",
+                    target,
                 )
 
         # We add a special file so that Poetry can detect
@@ -566,7 +581,9 @@ class Installer:
                 )
             )
             if not self._accept_all:
-                continue_install = input("Do you want to continue? ([y]/n) ") or "y"
+                continue_install = (
+                    input("Do you want to continue? ([y]/n) ") or "y"
+                )
                 if continue_install.lower() in {"n", "no"}:
                     return 0
 
@@ -603,7 +620,9 @@ class Installer:
     def uninstall(self) -> int:
         if not self.data_dir.exists():
             self._write(
-                "{} is not currently installed.".format(colorize("info", "Poetry"))
+                "{} is not currently installed.".format(
+                    colorize("info", "Poetry")
+                )
             )
 
             return 1
@@ -726,7 +745,9 @@ class Installer:
                 poetry=colorize("info", "Poetry"),
                 version=colorize("b", version),
                 poetry_home_bin=colorize("comment", self.bin_dir),
-                poetry_executable=colorize("b", self.bin_dir.joinpath("poetry")),
+                poetry_executable=colorize(
+                    "b", self.bin_dir.joinpath("poetry")
+                ),
                 configure_message=POST_MESSAGE_CONFIGURE_WINDOWS.format(
                     poetry_home_bin=colorize("comment", self.bin_dir)
                 ),
@@ -739,7 +760,9 @@ class Installer:
 
         with winreg.ConnectRegistry(
             None, winreg.HKEY_CURRENT_USER
-        ) as root, winreg.OpenKey(root, "Environment", 0, winreg.KEY_ALL_ACCESS) as key:
+        ) as root, winreg.OpenKey(
+            root, "Environment", 0, winreg.KEY_ALL_ACCESS
+        ) as key:
             path, _ = winreg.QueryValueEx(key, "PATH")
 
             return path
@@ -758,7 +781,9 @@ class Installer:
                 poetry=colorize("info", "Poetry"),
                 version=colorize("b", version),
                 poetry_home_bin=colorize("comment", self.bin_dir),
-                poetry_executable=colorize("b", self.bin_dir.joinpath("poetry")),
+                poetry_executable=colorize(
+                    "b", self.bin_dir.joinpath("poetry")
+                ),
                 configure_message=POST_MESSAGE_CONFIGURE_FISH.format(
                     poetry_home_bin=colorize("comment", self.bin_dir)
                 ),
@@ -778,7 +803,9 @@ class Installer:
                 poetry=colorize("info", "Poetry"),
                 version=colorize("b", version),
                 poetry_home_bin=colorize("comment", self.bin_dir),
-                poetry_executable=colorize("b", self.bin_dir.joinpath("poetry")),
+                poetry_executable=colorize(
+                    "b", self.bin_dir.joinpath("poetry")
+                ),
                 configure_message=POST_MESSAGE_CONFIGURE_UNIX.format(
                     poetry_home_bin=colorize("comment", self.bin_dir)
                 ),
@@ -874,7 +901,9 @@ def main():
         action="store_true",
         default=False,
     )
-    parser.add_argument("--version", help="install named version", dest="version")
+    parser.add_argument(
+        "--version", help="install named version", dest="version"
+    )
     parser.add_argument(
         "-f",
         "--force",
@@ -921,7 +950,8 @@ def main():
 
     installer = Installer(
         version=args.version or os.getenv("POETRY_VERSION"),
-        preview=args.preview or string_to_bool(os.getenv("POETRY_PREVIEW", "0")),
+        preview=args.preview
+        or string_to_bool(os.getenv("POETRY_PREVIEW", "0")),
         force=args.force,
         accept_all=args.accept_all
         or string_to_bool(os.getenv("POETRY_ACCEPT", "0"))

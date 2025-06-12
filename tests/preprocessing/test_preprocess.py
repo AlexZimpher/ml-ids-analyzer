@@ -100,7 +100,9 @@ def test_clean_and_label_drops_high_missing_and_constant_columns():
     # Generate exactly (min_non_na - 1) non-null values:
     non_null_count = min_non_na - 1
     # Fill the first 'non_null_count' entries with 1, then the rest with None
-    too_many_missing = [1] * non_null_count + [None] * (n_rows - non_null_count)
+    too_many_missing = [1] * non_null_count + [None] * (
+        n_rows - non_null_count
+    )
 
     data = {
         "too_many_missing": too_many_missing,

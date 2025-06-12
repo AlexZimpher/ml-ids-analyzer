@@ -40,7 +40,9 @@ def test_tune_threshold_perfect_separation():
     best_thr = tune_threshold(dummy, X_val, y_val)
 
     # Assert: because F1 is maximized at threshold=1.0, tune_threshold should return 1.0
-    assert best_thr == pytest.approx(1.0), f"Expected threshold 1.0, got {best_thr}"
+    assert best_thr == pytest.approx(
+        1.0
+    ), f"Expected threshold 1.0, got {best_thr}"
 
 
 def test_tune_threshold_all_zeros():

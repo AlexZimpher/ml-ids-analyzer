@@ -43,20 +43,26 @@ def test_search_hyperparameters_with_minimal_config(monkeypatch):
             "random_state": minimal_config["random_state"],
         }
 
-    monkeypatch.setattr(train_module, "_get_base_rf_params", fake_get_base_rf_params)
+    monkeypatch.setattr(
+        train_module, "_get_base_rf_params", fake_get_base_rf_params
+    )
 
     # Act: call search_hyperparameters
     model = train_module.search_hyperparameters(X_train, y_train)
 
     # Assert: returned model is a RandomForestClassifier
-    assert isinstance(model, RandomForestClassifier), "Expected RandomForestClassifier"
+    assert isinstance(
+        model, RandomForestClassifier
+    ), "Expected RandomForestClassifier"
 
     # The model must be fitted: check for feature_importances_
     assert hasattr(
         model, "feature_importances_"
     ), "Model should have feature_importances_"
     fi = model.feature_importances_
-    assert isinstance(fi, np.ndarray), "feature_importances_ should be a numpy array"
+    assert isinstance(
+        fi, np.ndarray
+    ), "feature_importances_ should be a numpy array"
     assert fi.shape == (4,), f"Expected 4 feature importances, got {fi.shape}"
 
 
@@ -93,18 +99,24 @@ def test_search_hyperparameters_without_search_params(monkeypatch):
             "random_state": no_search_config["random_state"],
         }
 
-    monkeypatch.setattr(train_module, "_get_base_rf_params", fake_get_base_rf_params)
+    monkeypatch.setattr(
+        train_module, "_get_base_rf_params", fake_get_base_rf_params
+    )
 
     # Act: call search_hyperparameters
     model = train_module.search_hyperparameters(X_train, y_train)
 
     # Assert: returned model is a RandomForestClassifier
-    assert isinstance(model, RandomForestClassifier), "Expected RandomForestClassifier"
+    assert isinstance(
+        model, RandomForestClassifier
+    ), "Expected RandomForestClassifier"
 
     # The model must be fitted: check for feature_importances_
     assert hasattr(
         model, "feature_importances_"
     ), "Model should have feature_importances_"
     fi = model.feature_importances_
-    assert isinstance(fi, np.ndarray), "feature_importances_ should be a numpy array"
+    assert isinstance(
+        fi, np.ndarray
+    ), "feature_importances_ should be a numpy array"
     assert fi.shape == (3,), f"Expected 3 feature importances, got {fi.shape}"
