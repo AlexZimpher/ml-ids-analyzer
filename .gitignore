@@ -1,12 +1,36 @@
 # Python bytecode
 **/__pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# coverage.py data files
+# Test cache
+.pytest_cache/
+
+# Coverage
 .coverage
 .coverage.*
 coverage.xml
-htmlcov/S
+htmlcov/
 
-# Large Files
-data/*
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Data and outputs
+outputs/
+data/
+
+# Local config
+.env
+.env.*
+*.local.yaml
+
+# Poetry/virtualenv
+.poetry/
+.venv/
+venv/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/

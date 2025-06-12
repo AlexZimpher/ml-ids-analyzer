@@ -11,101 +11,87 @@
 
 ## 🚀 Features
 
-- 📦 Modular ML pipeline (preprocessing, training, prediction)
-- 🧠 Random Forest with threshold optimization
-- 📊 SHAP-based explainability and evaluation plots
-- ⚙️ FastAPI prediction server -TODO
-- 🐳 Docker-only workflow - TODO
-- 🛠️ Suricata integration - TODO
+- Modular ML pipeline (preprocessing, training, prediction)
+- Random Forest with threshold optimization
+- SHAP-based explainability and evaluation plots
+- FastAPI prediction server (coming soon)
+- Docker workflow (coming soon)
+- Suricata integration (coming soon)
 
 ---
 
-## 📦 Getting Started
+## 🏁 Quickstart
 
 ### 1. Clone the Repo
 ```bash
+# Clone and enter the project
 git clone https://github.com/AlexZimpher/ml-ids-analyzer.git
 cd ml-ids-analyzer
 ```
 
-## 🧪 CLI Usage (via Docker)
-
-### 🧼 1. Preprocess CICIDS2017
+### 2. Install with Poetry
 ```bash
-  poetry run mlids-preprocess
-```
-
-### 🏋️‍♂️ 2. Train the Model
-```bash
-  poetry run mlids-train
-```
-
-### 📈 3. Predict on New Data
-```bash
-  poetry run mlids-predict 
+poetry install
+poetry shell
 ```
 
 ---
 
-## 🌐 Run the API & Dashboard
+## 🛠️ CLI Usage
 
-### 1. Start the FastAPI prediction server
-
+### Preprocess Data
 ```bash
-poetry run uvicorn src.ml_ids_analyzer.api.app:app --reload --host 0.0.0.0 --port 8000
+poetry run mlids-preprocess --data-dir data/cicids2017_raw --output-file outputs/cleaned.csv
 ```
 
-- Test the API at: [http://localhost:8000/docs](http://localhost:8000/docs)
-- Main prediction endpoint: `POST /predict/csv` (upload a CSV file)
-
-### 2. Start the Streamlit Dashboard
-
-In a new terminal:
-
+### Train the Model
 ```bash
-poetry run streamlit run src/ml_ids_analyzer/api/dashboard.py
+poetry run mlids-train --input-file outputs/cleaned.csv --output-dir outputs/
 ```
 
-- Access the dashboard at: [http://localhost:8501](http://localhost:8501)
-- The dashboard lets you upload a CSV, view predictions, download results, and see visualizations.
+### Predict on New Data
+```bash
+poetry run mlids-predict --input-file <your_data.csv> --model-file outputs/random_forest_model.joblib --scaler-file outputs/scaler.joblib --output-file outputs/predictions.csv
+```
+
+### All-in-one CLI
+```bash
+poetry run mlids-analyzer --help
+```
 
 ---
 
-## 📊 Visualizations
+## 🧪 Testing
+```bash
+poetry run pytest --cov=src/ml_ids_analyzer tests/
+```
 
-Generated automatically during training and saved to `/outputs`:
+---
 
-- **Confusion Matrix**
- 
-  ![Confusion Matrix](outputs/Random_Forest_tuned_confusion_matrix.png)
-- **Precision-Recall Curve**
-
-  ![PR Curve](outputs/precision_recall_curve.png)
-- **SHAP Feature Importance**
-
-  ![SHAP Summary](outputs/shap_summary.png)
+## 🐳 Docker (WIP)
+- See `docker/` for Dockerfile and compose setup.
 
 ---
 
 ## 📁 Project Structure
-
 ```
 ml-ids-analyzer/
-├── config/                  # YAML config file
-├── data/                    # Raw & processed input/output
-├── docker/                  # Dockerfile and entrypoint
-├── outputs/                 # Model artifacts, plots, logs
-├── src/ml_ids_analyzer/     # Source code package
-│   ├── preprocessing/       # Feature extraction & cleaning
-│   ├── modeling/            # Training & threshold tuning
-│   ├── inference/           # Prediction logic
-│   └── api/                 # FastAPI app & Streamlit dashboard
-└── tests/                   # Unit tests
+├── src/ml_ids_analyzer/
+│   ├── cli/cli.py
+│   ├── modeling/model.py
+│   ├── ...
+├── tests/
+│   ├── ...
+├── pyproject.toml
+├── README.md
 ```
 
 ---
 
-## 👥 Authors
+## 🤝 Contributing
+PRs and issues welcome!
 
-- **Alexander Zimpher**
-- **Spencer Hendren**
+---
+
+## 📜 License
+MIT
