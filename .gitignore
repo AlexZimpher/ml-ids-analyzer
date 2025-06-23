@@ -18,6 +18,7 @@ htmlcov/
 
 # Data and outputs
 data/
+outputs/
 
 # Local config
 .env
